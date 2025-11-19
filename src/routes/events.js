@@ -1,4 +1,3 @@
-// routes/events.js
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
@@ -15,7 +14,6 @@ function generateQrCodeString(length = 14) {
 }
 
 /**
-
  * Helper: cek apakah user adalah participant/panitia di event tertentu
  * return:
  *   - 'peserta' | 'panitia' kalau terdaftar
@@ -85,7 +83,6 @@ router.get('/panitia', authMiddleware, async (req, res) => {
              FROM events e
              LEFT JOIN qrinvitation q ON q.event_id = e.id
              WHERE e.created_by = ?
-
              ORDER BY e.event_date, e.event_time`,
             [createdBy]
         );
@@ -104,7 +101,6 @@ router.get('/panitia', authMiddleware, async (req, res) => {
         });
     }
 });
-
 
 
 /* ============================================================
@@ -173,7 +169,6 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 
-
 /* ============================================================
    3. GET /api/events/peserta?userId=ID
    Ambil semua event yang diikuti peserta
@@ -181,6 +176,7 @@ router.post('/', authMiddleware, async (req, res) => {
 router.get('/peserta', authMiddleware, async (req, res) => {
     try {
         const userId = Number(req.query.userId);
+
         if (!userId) {
             return res.status(400).json({
                 success: false,
@@ -191,7 +187,6 @@ router.get('/peserta', authMiddleware, async (req, res) => {
         if (req.userId !== userId && req.userRole !== 'admin') {
             return res.status(403).json({
                 success: false,
-
                 message: 'Tidak boleh akses'
             });
         }
@@ -214,6 +209,7 @@ router.get('/peserta', authMiddleware, async (req, res) => {
              ORDER BY e.event_date, e.event_time`,
             [userId]
         );
+
         return res.json({
             success: true,
             message: "Daftar event peserta",
@@ -229,6 +225,7 @@ router.get('/peserta', authMiddleware, async (req, res) => {
     }
 });
 
+
 /* ============================================================
    4. POST /api/events/join-by-qr
    Peserta join event berdasarkan QR Invitation Code
@@ -236,6 +233,7 @@ router.get('/peserta', authMiddleware, async (req, res) => {
 router.post('/join-by-qr', authMiddleware, async (req, res) => {
     try {
         let { qr_code } = req.body;
+
         if (!qr_code) {
             return res.status(400).json({
                 success: false,
@@ -296,7 +294,6 @@ router.post('/join-by-qr', authMiddleware, async (req, res) => {
             [eventId, userId]
         );
 
-
         // Update jumlah participants
         await pool.query(
             `UPDATE events 
@@ -304,6 +301,7 @@ router.post('/join-by-qr', authMiddleware, async (req, res) => {
              WHERE id = ?`,
             [eventId, eventId]
         );
+
         // Ambil ulang updated event
         const [updated] = await pool.query(
             `SELECT 
@@ -337,6 +335,7 @@ router.post('/join-by-qr', authMiddleware, async (req, res) => {
         });
     }
 });
+
 
 /* ============================================================
    5. ABSENSI PESERTA (dynamic route /:eventId/...)
@@ -647,8 +646,6 @@ router.post('/:eventId/announcements', authMiddleware, async (req, res) => {
     }
 });
 
-<<<<<<< HEAD
-=======
 
 /* ============================================================
    7. DAFTAR PESERTA + ABSENSI (PANITIA)
@@ -845,5 +842,4 @@ router.delete('/:eventId/qr-invitation', authMiddleware, async (req, res) => {
     }
 });
 
->>>>>>> 1d97b52 (Enhance database schema and seed data for events, participants, attendance, and announcements)
 module.exports = router;

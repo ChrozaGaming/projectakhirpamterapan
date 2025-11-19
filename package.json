@@ -1,10 +1,12 @@
 {
   "name": "campus-events-backend",
   "version": "1.0.0",
+  "description": "Campus Events Backend API using Express.js and MySQL",
   "main": "src/server.js",
+  "type": "commonjs",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "start": "NODE_ENV=production node src/server.js",
+    "dev": "nodemon --watch src --ext js,json --exec node src/server.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -15,6 +17,11 @@
     "mysql2": "^3.11.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0"
-  }
+    "nodemon": "^3.1.11"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Hilmy Raihan Alkindy",
+  "license": "MIT"
 }
