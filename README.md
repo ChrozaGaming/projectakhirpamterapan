@@ -225,7 +225,7 @@ http://localhost:3000
 - [x] Generate & tampilkan QR undangan
 - [x] Download QR ke galeri
 - [x] Dashboard panitia dengan filter & pencarian
-- [ ] Join event lewat scan QR (peserta)
+- [x] Join event lewat scan QR (peserta)
 - [ ] Manajemen peserta per event
 - [ ] Sistem absensi (check-in / check-out)
 - [ ] Pengumuman (announcement)
