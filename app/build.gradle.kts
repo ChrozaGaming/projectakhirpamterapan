@@ -63,12 +63,14 @@ dependencies {
     // ===== NAVIGATION COMPOSE =====
     implementation("androidx.navigation:navigation-compose:2.8.0")
 
-    implementation("com.google.zxing:core:3.5.1")
 
     // ===== VIEWMODEL =====
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
     implementation("androidx.compose.material:material-icons-extended:1.7.7")
+
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation("com.google.zxing:core:3.5.3")
 
     implementation("com.github.nanihadesuka:LazyColumnScrollbar:2.2.0")
 

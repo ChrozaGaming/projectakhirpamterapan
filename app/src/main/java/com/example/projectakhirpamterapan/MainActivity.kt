@@ -26,6 +26,9 @@ import com.example.projectakhirpamterapan.ui.panitia.CreateEventScreen
 import com.example.projectakhirpamterapan.ui.panitia.PanitiaDashboardScreen
 import com.example.projectakhirpamterapan.ui.panitia.PanitiaDashboardViewModel
 import com.example.projectakhirpamterapan.ui.panitia.PanitiaDashboardViewModelFactory
+import com.example.projectakhirpamterapan.ui.peserta.PesertaDashboardScreen
+import com.example.projectakhirpamterapan.ui.peserta.PesertaDashboardViewModel
+import com.example.projectakhirpamterapan.ui.peserta.PesertaDashboardViewModelFactory
 import com.example.projectakhirpamterapan.ui.role.RoleSelectionScreen
 import com.example.projectakhirpamterapan.ui.theme.ProjectakhirpamterapanTheme
 
@@ -49,7 +52,6 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val authVm: AuthViewModel = viewModel()
 
-                // Siapkan ApiService & EventRepository sekali saja
                 val apiService = remember { ApiConfig.getApiService() }
                 val eventRepository = remember { EventRepository(apiService) }
 
@@ -57,7 +59,7 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     startDestination = "login"
                 ) {
-                    /* ========================== LOGIN ========================== */
+                    // ========================== LOGIN ==========================
                     composable("login") {
                         LoginScreen(
                             vm = authVm,
@@ -70,7 +72,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    /* ======================== REGISTER ========================= */
+                    // ======================== REGISTER =========================
                     composable("register") {
                         RegisterScreen(
                             vm = authVm,
@@ -78,31 +80,59 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    /* ===================== ROLE SELECTION ===================== */
+                    // ===================== ROLE SELECTION =====================
                     composable("role") {
                         val user = authVm.loginState.user
 
                         RoleSelectionScreen(
                             userName = user?.name ?: "Pengguna",
-                            onPesertaSelected = { navController.navigate("pesertaDashboard") },
-                            onPanitiaSelected = { navController.navigate("panitiaDashboard") }
+                            onPesertaSelected = {
+                                navController.navigate("pesertaDashboard")
+                            },
+                            onPanitiaSelected = {
+                                navController.navigate("panitiaDashboard")
+                            }
                         )
                     }
 
-                    /* ==================== DASHBOARD PESERTA ==================== */
+                    // ==================== DASHBOARD PESERTA ====================
                     composable("pesertaDashboard") {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Dashboard Peserta (FITUR MENYUSUL)",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                        val user = authVm.loginState.user
+                        val token = authVm.loginState.token
+
+                        if (user == null || token.isNullOrBlank()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("Sesi berakhir. Silakan login ulang.")
+                            }
+                            return@composable
                         }
+
+                        val factory = PesertaDashboardViewModelFactory(
+                            eventRepository = eventRepository,
+                            authToken = token,
+                            userId = user.id
+                        )
+                        val pesertaVm: PesertaDashboardViewModel =
+                            viewModel(factory = factory)
+
+                        PesertaDashboardScreen(
+                            vm = pesertaVm,
+                            userName = user.name,
+                            onBackToRole = {
+                                // kembali ke pilih role
+                                navController.popBackStack()
+                                navController.navigate("role") {
+                                    popUpTo("role") { inclusive = false }
+                                    launchSingleTop = true
+                                }
+                            }
+                        )
                     }
 
-                    /* ==================== DASHBOARD PANITIA ==================== */
+                    // ==================== DASHBOARD PANITIA ====================
                     composable("panitiaDashboard") {
                         val user = authVm.loginState.user
                         val token = authVm.loginState.token
@@ -122,12 +152,11 @@ class MainActivity : ComponentActivity() {
                             authToken = token,
                             createdByUserId = user.id
                         )
-
-                        val vm: PanitiaDashboardViewModel =
+                        val panitiaVm: PanitiaDashboardViewModel =
                             viewModel(factory = factory)
 
                         PanitiaDashboardScreen(
-                            vm = vm,
+                            vm = panitiaVm,
                             userName = user.name,
                             onCreateEvent = {
                                 navController.navigate("createEvent")
@@ -135,7 +164,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    /* ====================== CREATE EVENT ======================= */
+                    // ======================== CREATE EVENT =====================
                     composable("createEvent") {
                         val user = authVm.loginState.user
                         val token = authVm.loginState.token
@@ -155,14 +184,11 @@ class MainActivity : ComponentActivity() {
                             authToken = token,
                             createdByUserId = user.id,
                             onBack = {
-                                // back dari icon panah
                                 navController.popBackStack()
                             },
                             onSuccess = {
-                                // 1) Hapus layar createEvent dari backstack
+                                // tutup createEvent, lalu refresh dashboard panitia
                                 navController.popBackStack()
-
-                                // 2) Re-create dashboard supaya ViewModel baru di-init
                                 navController.navigate("panitiaDashboard") {
                                     popUpTo("panitiaDashboard") {
                                         inclusive = true

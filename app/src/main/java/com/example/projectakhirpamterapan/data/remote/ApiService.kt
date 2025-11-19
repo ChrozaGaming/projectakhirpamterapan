@@ -4,6 +4,8 @@ import com.example.projectakhirpamterapan.model.BasicResponse
 import com.example.projectakhirpamterapan.model.CreateEventRequest
 import com.example.projectakhirpamterapan.model.Event
 import com.example.projectakhirpamterapan.model.EventsResponse
+import com.example.projectakhirpamterapan.model.JoinByQrRequest
+import com.example.projectakhirpamterapan.model.JoinEventResponse
 import com.example.projectakhirpamterapan.model.LoginRequest
 import com.example.projectakhirpamterapan.model.LoginResponse
 import com.example.projectakhirpamterapan.model.QrInvitationResponse
@@ -19,6 +21,8 @@ import retrofit2.http.Query
 
 interface ApiService {
 
+    // ================= AUTH =================
+
     @POST("auth/login")
     suspend fun login(
         @Body body: LoginRequest
@@ -29,6 +33,8 @@ interface ApiService {
         @Body body: RegisterRequest
     ): Response<BasicResponse>
 
+    // ================= PANITIA =================
+
     @GET("events/panitia")
     suspend fun getPanitiaEvents(
         @Header("Authorization") authHeader: String,
@@ -37,21 +43,35 @@ interface ApiService {
 
     @POST("events")
     suspend fun createEvent(
-        @Header("Authorization") token: String,
+        @Header("Authorization") authHeader: String,
         @Body request: CreateEventRequest
     ): Event
 
-    // ========= QR INVITATION =========
+    // ================= QR INVITATION =================
 
     @GET("events/{eventId}/qrinvitation")
     suspend fun getQrInvitation(
-        @Header("Authorization") token: String,
+        @Header("Authorization") authHeader: String,
         @Path("eventId") eventId: Int
     ): Response<QrInvitationResponse>
 
     @DELETE("events/{eventId}/qrinvitation")
     suspend fun deleteQrInvitation(
-        @Header("Authorization") token: String,
+        @Header("Authorization") authHeader: String,
         @Path("eventId") eventId: Int
     ): Response<BasicResponse>
+
+    // ================= PESERTA =================
+
+    @GET("events/peserta")
+    suspend fun getPesertaEvents(
+        @Header("Authorization") authHeader: String,
+        @Query("userId") userId: Int
+    ): Response<EventsResponse>
+
+    @POST("events/join-by-qr")
+    suspend fun joinEventByQr(
+        @Header("Authorization") authHeader: String,
+        @Body body: JoinByQrRequest   // body: { "qr_code": "ABC123..." }
+    ): Response<JoinEventResponse>
 }
