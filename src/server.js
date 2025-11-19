@@ -1,3 +1,4 @@
+// src/server.js
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -9,20 +10,39 @@ const eventRoutes = require('./routes/events');
 
 const app = express();
 
-// Middleware global
-app.use(cors());
+/* ============================
+   MIDDLEWARE GLOBAL
+   ============================ */
+
+// CORS – sementara dibuka semua origin (cocok untuk development / Android emulator)
+app.use(cors({
+  origin: '*',
+}));
+
+// Supaya bisa baca JSON body
 app.use(express.json());
 
-// Root check
+// (Opsional) kalau nanti butuh form-urlencoded:
+// app.use(express.urlencoded({ extended: true }));
+
+
+/* ============================
+   ROUTES
+   ============================ */
+
+// Root check / health check
 app.get('/', (req, res) => {
-  res.json({ message: 'Campus Events API' });
+  res.json({
+    success: true,
+    message: 'Campus Events API Running',
+  });
 });
 
 // Routing utama
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 
-// 404 handler JSON (opsional, biar ga keluar HTML kalau salah path)
+// 404 handler JSON (kalau endpoint tidak ketemu)
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -30,7 +50,17 @@ app.use((req, res) => {
   });
 });
 
+
+/* ============================
+   START SERVER
+   ============================ */
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// HOST 0.0.0.0 supaya bisa diakses dari Android emulator / perangkat lain di jaringan
+const HOST = process.env.HOST || '0.0.0.0';
+
+app.listen(PORT, HOST, () => {
+  console.log(`🔥 Server running on http://${HOST}:${PORT}`);
 });
+
+module.exports = app;
