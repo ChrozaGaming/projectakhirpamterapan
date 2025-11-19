@@ -1,4 +1,4 @@
-# 🏫 Campus Events Management — Prototype
+# 🏫 Eventaura — Prototype
 
 **Project Akhir PAM Terapan**  
 Sistem manajemen event kampus untuk **Panitia** dan **Peserta**, dengan fitur pembuatan agenda acara, QR undangan, dan (ke depannya) absensi serta pengelolaan tugas.
