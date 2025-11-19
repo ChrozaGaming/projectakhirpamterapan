@@ -178,7 +178,7 @@ fun PesertaEventCard(
                 ) {
                     InfoItem(
                         icon = Icons.Default.AccessTime,
-                        text = "${event.timeFormatted ?: "-"} WIB",
+                        text = "${event.timeFormatted ?: "-"} ",
                         isDark = isDark,
                         colorScheme = colorScheme
                     )

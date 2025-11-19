@@ -1,7 +1,6 @@
 package com.example.projectakhirpamterapan.ui.peserta
 
 import android.Manifest
-import android.app.Activity
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,11 +31,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -53,7 +52,15 @@ import com.journeyapps.barcodescanner.ScanOptions
 fun PesertaDashboardScreen(
     vm: PesertaDashboardViewModel,
     userName: String,
-    onBackToRole: () -> Unit
+    onBackToRole: () -> Unit,
+    onOpenEventDetail: (
+        eventId: Int,
+        eventTitle: String,
+        eventDate: String?,
+        eventTime: String?,
+        eventLocation: String,
+        eventStatus: String
+    ) -> Unit
 ) {
     val uiState by vm.uiState.collectAsState()
 
@@ -63,7 +70,7 @@ fun PesertaDashboardScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
-    // ===== Launcher ZXing Embedded (ScanContract) =====
+    // ZXing Embedded
     val scanQrLauncher = rememberLauncherForActivityResult(
         contract = ScanContract()
     ) { result ->
@@ -75,12 +82,11 @@ fun PesertaDashboardScreen(
                 }
             }
         } else {
-            // result.contents == null -> user batal / error
             snackMessage = "Scan dibatalkan."
         }
     }
 
-    // ===== Launcher untuk izin kamera =====
+    // Permission kamera
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -91,7 +97,6 @@ fun PesertaDashboardScreen(
         }
     }
 
-    // ===== Effect untuk menampilkan snackbar =====
     LaunchedEffect(snackMessage) {
         snackMessage?.let {
             snackbarHostState.showSnackbar(it)
@@ -194,7 +199,19 @@ fun PesertaDashboardScreen(
                         }
 
                         items(uiState.events, key = { it.id }) { event ->
-                            PesertaEventCard(event = event)
+                            PesertaEventCard(
+                                event = event,
+                                onManageClick = {
+                                    onOpenEventDetail(
+                                        event.id,
+                                        event.title,
+                                        event.eventDateRaw,
+                                        event.eventTimeRaw,
+                                        event.location,
+                                        event.status
+                                    )
+                                }
+                            )
                         }
 
                         item {
@@ -227,9 +244,6 @@ fun PesertaDashboardScreen(
     }
 }
 
-/**
- * Mulai proses scan QR menggunakan ZXing Embedded (ScanContract + ScanOptions) masih testing yaa.
- */
 private fun startEmbeddedQrScan(
     launcher: androidx.activity.result.ActivityResultLauncher<ScanOptions>
 ) {
@@ -237,7 +251,7 @@ private fun startEmbeddedQrScan(
         setDesiredBarcodeFormats(ScanOptions.QR_CODE)
         setPrompt("Arahkan kamera ke QR Invitation")
         setBeepEnabled(true)
-        setCameraId(0)            // kamera belakang
+        setCameraId(0)
         setOrientationLocked(false)
     }
     launcher.launch(options)

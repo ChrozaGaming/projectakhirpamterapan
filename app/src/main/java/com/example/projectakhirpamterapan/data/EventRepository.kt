@@ -1,9 +1,14 @@
 package com.example.projectakhirpamterapan.data
 
 import com.example.projectakhirpamterapan.data.remote.ApiService
+import com.example.projectakhirpamterapan.model.AttendanceRequest
 import com.example.projectakhirpamterapan.model.BasicResponse
 import com.example.projectakhirpamterapan.model.CreateEventRequest
 import com.example.projectakhirpamterapan.model.Event
+import com.example.projectakhirpamterapan.model.EventAnnouncement
+import com.example.projectakhirpamterapan.model.EventAnnouncementsResponse
+import com.example.projectakhirpamterapan.model.EventAttendance
+import com.example.projectakhirpamterapan.model.EventAttendanceResponse
 import com.example.projectakhirpamterapan.model.EventsResponse
 import com.example.projectakhirpamterapan.model.JoinByQrRequest
 import com.example.projectakhirpamterapan.model.JoinEventResponse
@@ -171,4 +176,129 @@ class EventRepository(
             Result.failure(e)
         }
     }
+
+    // =================== ABSENSI PESERTA ===================
+
+    suspend fun getMyAttendance(
+        authToken: String,
+        eventId: Int
+    ): Result<EventAttendance?> {
+        return try {
+            val response = apiService.getMyAttendance(
+                authHeader = "Bearer $authToken",
+                eventId = eventId
+            )
+
+            if (response.isSuccessful) {
+                val body: EventAttendanceResponse? = response.body()
+                if (body != null && body.success) {
+                    // bisa null kalau belum pernah absen
+                    Result.success(body.data)
+                } else {
+                    Result.failure(Exception(body?.message ?: "Gagal memuat data absensi"))
+                }
+            } else {
+                Result.failure(
+                    Exception("Error ${response.code()}: ${response.errorBody()?.string()}")
+                )
+            }
+
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun checkInAttendance(
+        authToken: String,
+        eventId: Int,
+        status: String? = null    // null -> 'hadir' (default di backend)
+    ): Result<EventAttendance> {
+        return try {
+            val response = apiService.checkInAttendance(
+                authHeader = "Bearer $authToken",
+                eventId = eventId,
+                body = AttendanceRequest(status)
+            )
+
+            if (response.isSuccessful) {
+                val body: EventAttendanceResponse? = response.body()
+                if (body != null && body.success && body.data != null) {
+                    Result.success(body.data)
+                } else {
+                    Result.failure(Exception(body?.message ?: "Gagal mencatat absensi"))
+                }
+            } else {
+                Result.failure(
+                    Exception("Error ${response.code()}: ${response.errorBody()?.string()}")
+                )
+            }
+
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // =================== ANNOUNCEMENTS EVENT ===================
+
+    suspend fun getEventAnnouncements(
+        authToken: String,
+        eventId: Int
+    ): Result<List<EventAnnouncement>> {
+        return try {
+            val response = apiService.getEventAnnouncements(
+                authHeader = "Bearer $authToken",
+                eventId = eventId
+            )
+
+            if (response.isSuccessful) {
+                val body: EventAnnouncementsResponse? = response.body()
+                if (body != null && body.success) {
+                    Result.success(body.data ?: emptyList())
+                } else {
+                    Result.failure(Exception(body?.message ?: "Gagal memuat announcement"))
+                }
+            } else {
+                Result.failure(
+                    Exception("Error ${response.code()}: ${response.errorBody()?.string()}")
+                )
+            }
+
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Kalau nanti mau buat announcement dari app (panitia):
+    /*
+    suspend fun createEventAnnouncement(
+        authToken: String,
+        eventId: Int,
+        title: String,
+        bodyText: String
+    ): Result<EventAnnouncement> {
+        return try {
+            val response = apiService.createEventAnnouncement(
+                authHeader = "Bearer $authToken",
+                eventId = eventId,
+                body = CreateAnnouncementRequest(title = title, body = bodyText)
+            )
+
+            if (response.isSuccessful) {
+                val respBody: EventAnnouncementResponse? = response.body()
+                if (respBody != null && respBody.success && respBody.data != null) {
+                    Result.success(respBody.data)
+                } else {
+                    Result.failure(Exception(respBody?.message ?: "Gagal membuat announcement"))
+                }
+            } else {
+                Result.failure(
+                    Exception("Error ${response.code()}: ${response.errorBody()?.string()}")
+                )
+            }
+
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    */
 }
