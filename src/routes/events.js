@@ -1,11 +1,10 @@
-
 // routes/events.js
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// Helper: generate random qr_code 14 digit
+// Helper: generate random QR code string (14 chars)
 function generateQrCodeString(length = 14) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let code = '';
@@ -16,25 +15,59 @@ function generateQrCodeString(length = 14) {
 }
 
 /**
- * GET /api/events/panitia?createdBy=1
- * Mengambil daftar event milik panitia tertentu + qr_code
+
+ * Helper: cek apakah user adalah participant/panitia di event tertentu
+ * return:
+ *   - 'peserta' | 'panitia' kalau terdaftar
+ *   - null kalau bukan peserta event tsb
  */
+async function getEventParticipantRole(eventId, userId) {
+    const [rows] = await pool.query(
+        `SELECT role_in_event 
+         FROM event_participants 
+         WHERE event_id = ? AND user_id = ?
+         LIMIT 1`,
+        [eventId, userId]
+    );
+    if (rows.length === 0) return null;
+    return rows[0].role_in_event;
+}
+
+/**
+ * Helper: ambil info event (termasuk created_by) untuk keperluan otorisasi
+ */
+async function getEventById(eventId) {
+    const [rows] = await pool.query(
+        `SELECT id, created_by, title, event_date, event_time, location, status, participants
+         FROM events
+         WHERE id = ?
+         LIMIT 1`,
+        [eventId]
+    );
+    if (rows.length === 0) return null;
+    return rows[0];
+}
+
+/* ============================================================
+   1. GET /api/events/panitia?createdBy=ID
+   Ambil semua event BUATAN panitia tertentu
+============================================================ */
 router.get('/panitia', authMiddleware, async (req, res) => {
     try {
-        const createdBy = parseInt(req.query.createdBy, 10);
+        const createdBy = Number(req.query.createdBy);
 
-        if (!createdBy || Number.isNaN(createdBy)) {
+        if (!createdBy) {
             return res.status(400).json({
                 success: false,
                 message: 'Parameter createdBy wajib diisi'
             });
         }
 
-        // Hanya pemilik atau admin yang boleh ambil
+        // Panitia hanya boleh akses event miliknya
         if (req.userId !== createdBy && req.userRole !== 'admin') {
             return res.status(403).json({
                 success: false,
-                message: 'Tidak punya akses untuk event ini'
+                message: 'Akses ditolak'
             });
         }
 
@@ -52,64 +85,65 @@ router.get('/panitia', authMiddleware, async (req, res) => {
              FROM events e
              LEFT JOIN qrinvitation q ON q.event_id = e.id
              WHERE e.created_by = ?
-             ORDER BY e.event_date ASC, e.event_time ASC`,
+
+             ORDER BY e.event_date, e.event_time`,
             [createdBy]
         );
 
         return res.json({
             success: true,
-            message: 'Daftar event panitia',
+            message: "Daftar event panitia",
             data: rows
         });
+
     } catch (err) {
-        console.error('GET /api/events/panitia error', err);
-        res.status(500).json({
+        console.error("GET /events/panitia error:", err);
+        return res.status(500).json({
             success: false,
-            message: 'Terjadi kesalahan server'
+            message: "Kesalahan server"
         });
     }
 });
 
-/**
- * POST /api/events
- * Body: { created_by, title, event_date, event_time, location, status? }
- * - Insert ke events
- * - Generate qr_code random
- * - Insert ke qrinvitation
- * - Return 1 objek event + qr_code di root (tanpa wrapper success/data)
- */
+
+
+/* ============================================================
+   2. POST /api/events
+   Panitia membuat event baru + auto generate QR
+============================================================ */
 router.post('/', authMiddleware, async (req, res) => {
     try {
         const { created_by, title, event_date, event_time, location, status } = req.body;
 
+        // Validasi input
         if (!created_by || !title || !event_date || !event_time || !location) {
             return res.status(400).json({
                 success: false,
-                message: 'Field created_by, title, event_date, event_time, location wajib diisi'
+                message: 'Field wajib belum lengkap'
             });
         }
 
-        // Hanya diri sendiri / admin
+        // Hanya diri sendiri atau admin yang boleh create event
         if (req.userId !== created_by && req.userRole !== 'admin') {
             return res.status(403).json({
                 success: false,
-                message: 'Tidak punya akses membuat event untuk user ini'
+                message: 'Tidak berhak membuat event untuk user ini'
             });
         }
 
         const finalStatus = status || 'Akan Datang';
 
-        // Insert ke events
-        const [result] = await pool.query(
+        // Insert event
+        const [insertEvent] = await pool.query(
             `INSERT INTO events (created_by, title, event_date, event_time, location, status)
              VALUES (?, ?, ?, ?, ?, ?)`,
             [created_by, title, event_date, event_time, location, finalStatus]
         );
 
-        const eventId = result.insertId;
+        const eventId = insertEvent.insertId;
 
-        // Generate qr_code dan insert ke qrinvitation
-        const qrCode = generateQrCodeString(14);
+        // Generate QR Invitation Code
+        let qrCode = generateQrCodeString(14);
 
         await pool.query(
             `INSERT INTO qrinvitation (event_id, qr_code)
@@ -128,24 +162,26 @@ router.post('/', authMiddleware, async (req, res) => {
             participants: 0,
             qr_code: qrCode
         });
+
     } catch (err) {
-        console.error('POST /api/events error', err);
-        res.status(500).json({
+        console.error("POST /events error:", err);
+        return res.status(500).json({
             success: false,
-            message: 'Terjadi kesalahan server saat membuat event'
+            message: "Kesalahan server saat membuat event"
         });
     }
 });
 
-/**
- * GET /api/events/peserta?userId=2
- * Mengambil daftar event yang diikuti peserta (via event_participants)
- */
+
+
+/* ============================================================
+   3. GET /api/events/peserta?userId=ID
+   Ambil semua event yang diikuti peserta
+============================================================ */
 router.get('/peserta', authMiddleware, async (req, res) => {
     try {
-        const userId = parseInt(req.query.userId, 10);
-
-        if (!userId || Number.isNaN(userId)) {
+        const userId = Number(req.query.userId);
+        if (!userId) {
             return res.status(400).json({
                 success: false,
                 message: 'Parameter userId wajib diisi'
@@ -155,7 +191,8 @@ router.get('/peserta', authMiddleware, async (req, res) => {
         if (req.userId !== userId && req.userRole !== 'admin') {
             return res.status(403).json({
                 success: false,
-                message: 'Tidak punya akses untuk resource ini'
+
+                message: 'Tidak boleh akses'
             });
         }
 
@@ -170,54 +207,47 @@ router.get('/peserta', authMiddleware, async (req, res) => {
                 e.status,
                 e.participants,
                 q.qr_code
-             FROM events e
-             INNER JOIN event_participants ep ON ep.event_id = e.id
+             FROM event_participants ep
+             INNER JOIN events e ON ep.event_id = e.id
              LEFT JOIN qrinvitation q ON q.event_id = e.id
              WHERE ep.user_id = ?
-             ORDER BY e.event_date ASC, e.event_time ASC`,
+             ORDER BY e.event_date, e.event_time`,
             [userId]
         );
-
         return res.json({
             success: true,
-            message: 'Daftar event peserta',
+            message: "Daftar event peserta",
             data: rows
         });
+
     } catch (err) {
-        console.error('GET /api/events/peserta error', err);
-        res.status(500).json({
+        console.error("GET /events/peserta error:", err);
+        return res.status(500).json({
             success: false,
-            message: 'Terjadi kesalahan server'
+            message: "Kesalahan server"
         });
     }
 });
 
-/**
- * POST /api/events/join-by-qr
- * Body: { qr_code }
- * - Cari qr_code di qrinvitation
- * - Insert ke event_participants (jika belum)
- * - Update events.participants = jumlah peserta
- * - Return event lengkap + qr_code
- */
+/* ============================================================
+   4. POST /api/events/join-by-qr
+   Peserta join event berdasarkan QR Invitation Code
+============================================================ */
 router.post('/join-by-qr', authMiddleware, async (req, res) => {
     try {
-        let { qr_code } = req.body || {};
-
+        let { qr_code } = req.body;
         if (!qr_code) {
             return res.status(400).json({
                 success: false,
-                message: 'Field qr_code wajib diisi'
+                message: 'qr_code wajib diisi'
             });
         }
 
-        // Samakan format: uppercase + trim
         qr_code = String(qr_code).trim().toUpperCase();
 
-        // Cari event dari qr_code
+        // Cek apakah QR code valid
         const [rows] = await pool.query(
             `SELECT 
-                q.event_id,
                 e.id,
                 e.created_by,
                 e.title,
@@ -228,59 +258,54 @@ router.post('/join-by-qr', authMiddleware, async (req, res) => {
                 e.participants,
                 q.qr_code
              FROM qrinvitation q
-             INNER JOIN events e ON e.id = q.event_id
+             INNER JOIN events e ON q.event_id = e.id
              WHERE q.qr_code = ?
              LIMIT 1`,
             [qr_code]
         );
 
         if (rows.length === 0) {
-            return res.status(404).json({
+            return res.json({
                 success: false,
-                message: 'QR code tidak valid atau event tidak ditemukan'
+                message: "QR code tidak valid"
             });
         }
 
         const event = rows[0];
-        const eventId = event.event_id || event.id;
+        const eventId = event.id;
         const userId = req.userId;
 
-        // Cek sudah join atau belum
-        const [existing] = await pool.query(
-            `SELECT id
-             FROM event_participants
-             WHERE event_id = ? AND user_id = ?`,
+        // Cek apakah sudah join
+        const [exist] = await pool.query(
+            `SELECT id FROM event_participants WHERE event_id = ? AND user_id = ?`,
             [eventId, userId]
         );
 
-        if (existing.length > 0) {
-            // Sudah join, balikan event apa adanya
+        if (exist.length > 0) {
             return res.json({
                 success: true,
-                message: 'Kamu sudah tergabung di event ini',
+                message: "Kamu sudah tergabung di event ini",
                 data: event
             });
         }
 
-        // Insert ke event_participants
+        // Insert baru
         await pool.query(
             `INSERT INTO event_participants (event_id, user_id)
              VALUES (?, ?)`,
             [eventId, userId]
         );
 
-        // Update jumlah participants di events
+
+        // Update jumlah participants
         await pool.query(
-            `UPDATE events
-             SET participants = (
-                 SELECT COUNT(*) FROM event_participants WHERE event_id = ?
-             )
+            `UPDATE events 
+             SET participants = (SELECT COUNT(*) FROM event_participants WHERE event_id = ?)
              WHERE id = ?`,
             [eventId, eventId]
         );
-
-        // Ambil ulang event dengan participants terbaru
-        const [updatedRows] = await pool.query(
+        // Ambil ulang updated event
+        const [updated] = await pool.query(
             `SELECT 
                 e.id,
                 e.created_by,
@@ -298,18 +323,320 @@ router.post('/join-by-qr', authMiddleware, async (req, res) => {
             [eventId]
         );
 
-        const updatedEvent = updatedRows[0];
+        return res.json({
+            success: true,
+            message: "Berhasil bergabung ke event",
+            data: updated[0]
+        });
+
+    } catch (err) {
+        console.error("POST /events/join-by-qr error:", err);
+        return res.status(500).json({
+            success: false,
+            message: "Kesalahan server saat join event"
+        });
+    }
+});
+
+/* ============================================================
+   5. ABSENSI PESERTA (dynamic route /:eventId/...)
+   - Peserta hanya bisa absen kalau sudah tergabung di event
+============================================================ */
+
+/**
+ * POST /api/events/:eventId/attendance/check-in
+ * Body (opsional):
+ *   { "status": "hadir" | "izin" | "alfa" }  default: 'hadir'
+ */
+router.post('/:eventId/attendance/check-in', authMiddleware, async (req, res) => {
+    try {
+        const eventId = Number(req.params.eventId);
+        if (!eventId) {
+            return res.status(400).json({
+                success: false,
+                message: 'eventId tidak valid'
+            });
+        }
+
+        const event = await getEventById(eventId);
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message: 'Event tidak ditemukan'
+            });
+        }
+
+        const userId = req.userId;
+
+        // Harus peserta event (atau admin)
+        const roleInEvent = await getEventParticipantRole(eventId, userId);
+        if (!roleInEvent && req.userRole !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Kamu belum tergabung di event ini'
+            });
+        }
+
+        let { status } = req.body;
+        if (!status || !['hadir', 'izin', 'alfa'].includes(status)) {
+            status = 'hadir';
+        }
+
+        // Insert atau update absensi (satu kali per event per user)
+        await pool.query(
+            `INSERT INTO event_attendance (event_id, user_id, status)
+             VALUES (?, ?, ?)
+             ON DUPLICATE KEY UPDATE 
+                status = VALUES(status),
+                checked_in_at = CURRENT_TIMESTAMP`,
+            [eventId, userId, status]
+        );
+
+        const [rows] = await pool.query(
+            `SELECT id, event_id, user_id, status, checked_in_at
+             FROM event_attendance
+             WHERE event_id = ? AND user_id = ?
+             LIMIT 1`,
+            [eventId, userId]
+        );
 
         return res.json({
             success: true,
-            message: 'Berhasil bergabung ke event',
-            data: updatedEvent
+            message: 'Absensi berhasil dicatat',
+            data: rows[0]
         });
+
     } catch (err) {
-        console.error('POST /api/events/join-by-qr error', err);
-        res.status(500).json({
+        console.error("POST /events/:eventId/attendance/check-in error:", err);
+        return res.status(500).json({
             success: false,
-            message: 'Terjadi kesalahan server saat join event'
+            message: 'Kesalahan server saat absensi'
+        });
+    }
+});
+
+
+/**
+ * GET /api/events/:eventId/attendance/me
+ * Lihat status absensi diri sendiri di event tsb
+ */
+router.get('/:eventId/attendance/me', authMiddleware, async (req, res) => {
+    try {
+        const eventId = Number(req.params.eventId);
+        if (!eventId) {
+            return res.status(400).json({
+                success: false,
+                message: 'eventId tidak valid'
+            });
+        }
+
+        const event = await getEventById(eventId);
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message: 'Event tidak ditemukan'
+            });
+        }
+
+        const userId = req.userId;
+
+        // Harus peserta event (atau admin)
+        const roleInEvent = await getEventParticipantRole(eventId, userId);
+        if (!roleInEvent && req.userRole !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Kamu belum tergabung di event ini'
+            });
+        }
+
+        const [rows] = await pool.query(
+            `SELECT id, event_id, user_id, status, checked_in_at
+             FROM event_attendance
+             WHERE event_id = ? AND user_id = ?
+             LIMIT 1`,
+            [eventId, userId]
+        );
+
+        if (rows.length === 0) {
+            return res.json({
+                success: true,
+                message: 'Belum ada data absensi untuk event ini',
+                data: null
+            });
+        }
+
+        return res.json({
+            success: true,
+            message: 'Data absensi ditemukan',
+            data: rows[0]
+        });
+
+    } catch (err) {
+        console.error("GET /events/:eventId/attendance/me error:", err);
+        return res.status(500).json({
+            success: false,
+            message: 'Kesalahan server saat mengambil data absensi'
+        });
+    }
+});
+
+
+/* ============================================================
+   6. ANNOUNCEMENTS EVENT
+   - Semua peserta & panitia & admin: boleh GET
+   - Hanya panitia event / creator / admin: boleh POST
+============================================================ */
+
+/**
+ * GET /api/events/:eventId/announcements
+ */
+router.get('/:eventId/announcements', authMiddleware, async (req, res) => {
+    try {
+        const eventId = Number(req.params.eventId);
+        if (!eventId) {
+            return res.status(400).json({
+                success: false,
+                message: 'eventId tidak valid'
+            });
+        }
+
+        const event = await getEventById(eventId);
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message: 'Event tidak ditemukan'
+            });
+        }
+
+        const userId = req.userId;
+
+        // Harus minimal peserta event (atau admin)
+        const roleInEvent = await getEventParticipantRole(eventId, userId);
+        if (!roleInEvent && req.userRole !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Kamu belum tergabung di event ini'
+            });
+        }
+
+        const [rows] = await pool.query(
+            `SELECT 
+                ea.id,
+                ea.event_id,
+                ea.title,
+                ea.body,
+                ea.created_by,
+                u.name AS created_by_name,
+                ea.created_at
+             FROM event_announcements ea
+             INNER JOIN users u ON ea.created_by = u.id
+             WHERE ea.event_id = ?
+             ORDER BY ea.created_at DESC`,
+            [eventId]
+        );
+
+        return res.json({
+            success: true,
+            message: 'Daftar announcement event',
+            data: rows
+        });
+
+    } catch (err) {
+        console.error("GET /events/:eventId/announcements error:", err);
+        return res.status(500).json({
+            success: false,
+            message: 'Kesalahan server saat mengambil announcement'
+        });
+    }
+});
+
+
+/**
+ * POST /api/events/:eventId/announcements
+ * Body:
+ *   { "title": "...", "body": "..." }
+ * Hanya:
+ *   - admin global, atau
+ *   - pembuat event (events.created_by), atau
+ *   - panitia di event (role_in_event = 'panitia')
+ */
+router.post('/:eventId/announcements', authMiddleware, async (req, res) => {
+    try {
+        const eventId = Number(req.params.eventId);
+        if (!eventId) {
+            return res.status(400).json({
+                success: false,
+                message: 'eventId tidak valid'
+            });
+        }
+
+        const event = await getEventById(eventId);
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message: 'Event tidak ditemukan'
+            });
+        }
+
+        const userId = req.userId;
+        const { title, body } = req.body;
+
+        if (!title || !body) {
+            return res.status(400).json({
+                success: false,
+                message: 'Judul dan isi announcement wajib diisi'
+            });
+        }
+
+        // Cek role di event
+        const roleInEvent = await getEventParticipantRole(eventId, userId);
+
+        const isAdmin = req.userRole === 'admin';
+        const isEventCreator = event.created_by === userId;
+        const isPanitiaEvent = roleInEvent === 'panitia';
+
+        if (!isAdmin && !isEventCreator && !isPanitiaEvent) {
+            return res.status(403).json({
+                success: false,
+                message: 'Tidak berhak membuat announcement di event ini'
+            });
+        }
+
+        const [insertResult] = await pool.query(
+            `INSERT INTO event_announcements (event_id, title, body, created_by)
+             VALUES (?, ?, ?, ?)`,
+            [eventId, title, body, userId]
+        );
+
+        const announcementId = insertResult.insertId;
+
+        const [rows] = await pool.query(
+            `SELECT 
+                ea.id,
+                ea.event_id,
+                ea.title,
+                ea.body,
+                ea.created_by,
+                u.name AS created_by_name,
+                ea.created_at
+             FROM event_announcements ea
+             INNER JOIN users u ON ea.created_by = u.id
+             WHERE ea.id = ?
+             LIMIT 1`,
+            [announcementId]
+        );
+
+        return res.status(201).json({
+            success: true,
+            message: 'Announcement berhasil dibuat',
+            data: rows[0]
+        });
+
+    } catch (err) {
+        console.error("POST /events/:eventId/announcements error:", err);
+        return res.status(500).json({
+            success: false,
+            message: 'Kesalahan server saat membuat announcement'
         });
     }
 });
