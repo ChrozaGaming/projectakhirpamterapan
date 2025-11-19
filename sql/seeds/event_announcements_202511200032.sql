@@ -1,0 +1,9 @@
+INSERT INTO campus_events.event_announcements (event_id,title,body,created_by,created_at) VALUES
+	 (1,'Pembukaan Seminar Nasional Kebudayaan Nusantara','Kami mengundang seluruh mahasiswa untuk hadir pada pembukaan Seminar Nasional Kebudayaan Nusantara yang akan berlangsung di Aula Utama kampus pada hari Jumat, 6 Desember pukul 09.00. Harap hadir tepat waktu.',2,'2025-11-19 22:36:09'),
+	 (1,'Pengumpulan Makalah Peserta Seminar','Bagi peserta yang akan mempresentasikan karya tulis, batas akhir pengumpulan makalah adalah tanggal 2 Desember pukul 23.59 melalui portal resmi seminar. Makalah yang terlambat tidak akan diproses.',1,'2025-11-19 22:36:09'),
+	 (2,'Pendaftaran Workshop Karier dan Networking Alumni','Indonesia Society membuka pendaftaran untuk Workshop Karier dan Networking Alumni yang akan diadakan pada tanggal 12 Desember. Peserta akan mendapatkan e-sertifikat. Kuota terbatas untuk 80 orang.',3,'2025-11-19 22:36:09'),
+	 (2,'Perubahan Lokasi Workshop Karier','Dikarenakan renovasi ruang seminar, lokasi workshop dipindahkan ke Gedung F lantai 3, ruang F301. Jadwal dan agenda kegiatan tetap sama.',1,'2025-11-19 22:36:09'),
+	 (3,'Pengumuman Kurasi Pameran Foto','Daftar peserta yang lolos kurasi untuk Pameran Foto “Indonesia di Mata Dunia” telah diumumkan di website resmi organisasi. Selamat bagi peserta yang terpilih!',2,'2025-11-19 22:36:09'),
+	 (4,'Pendaftaran Relawan Bakti Sosial Kampus Peduli','Indonesia Society membuka kesempatan bagi mahasiswa yang ingin bergabung sebagai relawan dalam kegiatan Bakti Sosial Kampus Peduli pada tanggal 20 Desember. Pendaftaran dibuka hingga 15 Desember.',3,'2025-11-19 22:36:09'),
+	 (4,'Arahan Teknis Relawan Sebelum Kegiatan','Briefing wajib untuk seluruh relawan akan dilaksanakan pada 18 Desember pukul 16.00 di ruang rapat Student Center. Harap hadir tepat waktu dan mengenakan pakaian rapi.',2,'2025-11-19 22:36:09'),
+	 (2,'aaa','aaaa',2,'2025-11-19 23:11:01');

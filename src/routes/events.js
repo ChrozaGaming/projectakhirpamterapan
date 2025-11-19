@@ -63,7 +63,7 @@ router.get('/panitia', authMiddleware, async (req, res) => {
             });
         }
 
-        // Panitia hanya boleh akses event miliknya
+        // Panitia hanya boleh akses event miliknya (atau admin)
         if (req.userId !== createdBy && req.userRole !== 'admin') {
             return res.status(403).json({
                 success: false,
@@ -340,7 +340,6 @@ router.post('/join-by-qr', authMiddleware, async (req, res) => {
 
 /* ============================================================
    5. ABSENSI PESERTA (dynamic route /:eventId/...)
-   - Peserta hanya bisa absen kalau sudah tergabung di event
 ============================================================ */
 
 /**
@@ -370,7 +369,10 @@ router.post('/:eventId/attendance/check-in', authMiddleware, async (req, res) =>
 
         // Harus peserta event (atau admin)
         const roleInEvent = await getEventParticipantRole(eventId, userId);
-        if (!roleInEvent && req.userRole !== 'admin') {
+        const isAdmin = req.userRole === 'admin';
+        const isEventCreator = event.created_by === userId;
+
+        if (!roleInEvent && !isAdmin && !isEventCreator) {
             return res.status(403).json({
                 success: false,
                 message: 'Kamu belum tergabung di event ini'
@@ -440,9 +442,11 @@ router.get('/:eventId/attendance/me', authMiddleware, async (req, res) => {
 
         const userId = req.userId;
 
-        // Harus peserta event (atau admin)
         const roleInEvent = await getEventParticipantRole(eventId, userId);
-        if (!roleInEvent && req.userRole !== 'admin') {
+        const isAdmin = req.userRole === 'admin';
+        const isEventCreator = event.created_by === userId;
+
+        if (!roleInEvent && !isAdmin && !isEventCreator) {
             return res.status(403).json({
                 success: false,
                 message: 'Kamu belum tergabung di event ini'
@@ -483,7 +487,7 @@ router.get('/:eventId/attendance/me', authMiddleware, async (req, res) => {
 
 /* ============================================================
    6. ANNOUNCEMENTS EVENT
-   - Semua peserta & panitia & admin: boleh GET
+   - Peserta/panitia/creator/admin: boleh GET
    - Hanya panitia event / creator / admin: boleh POST
 ============================================================ */
 
@@ -510,9 +514,12 @@ router.get('/:eventId/announcements', authMiddleware, async (req, res) => {
 
         const userId = req.userId;
 
-        // Harus minimal peserta event (atau admin)
         const roleInEvent = await getEventParticipantRole(eventId, userId);
-        if (!roleInEvent && req.userRole !== 'admin') {
+        const isAdmin = req.userRole === 'admin';
+        const isEventCreator = event.created_by === userId;
+
+        // minimal: peserta, panitia, creator, atau admin
+        if (!roleInEvent && !isAdmin && !isEventCreator) {
             return res.status(403).json({
                 success: false,
                 message: 'Kamu belum tergabung di event ini'
@@ -588,7 +595,6 @@ router.post('/:eventId/announcements', authMiddleware, async (req, res) => {
             });
         }
 
-        // Cek role di event
         const roleInEvent = await getEventParticipantRole(eventId, userId);
 
         const isAdmin = req.userRole === 'admin';
@@ -641,4 +647,203 @@ router.post('/:eventId/announcements', authMiddleware, async (req, res) => {
     }
 });
 
+<<<<<<< HEAD
+=======
+
+/* ============================================================
+   7. DAFTAR PESERTA + ABSENSI (PANITIA)
+   GET /api/events/:eventId/participants
+============================================================ */
+
+router.get('/:eventId/participants', authMiddleware, async (req, res) => {
+    try {
+        const eventId = Number(req.params.eventId);
+        if (!eventId) {
+            return res.status(400).json({
+                success: false,
+                message: 'eventId tidak valid'
+            });
+        }
+
+        const event = await getEventById(eventId);
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message: 'Event tidak ditemukan'
+            });
+        }
+
+        const userId = req.userId;
+        const roleInEvent = await getEventParticipantRole(eventId, userId);
+        const isAdmin = req.userRole === 'admin';
+        const isEventCreator = event.created_by === userId;
+        const isPanitiaEvent = roleInEvent === 'panitia';
+
+        // Hanya admin, creator, atau panitia yang boleh lihat daftar peserta
+        if (!isAdmin && !isEventCreator && !isPanitiaEvent) {
+            return res.status(403).json({
+                success: false,
+                message: 'Tidak berhak melihat daftar peserta event ini'
+            });
+        }
+
+        const [rows] = await pool.query(
+            `SELECT 
+                ep.user_id,
+                u.name,
+                u.email,
+                ep.role_in_event,
+                ea.status,
+                ea.checked_in_at
+             FROM event_participants ep
+             INNER JOIN users u ON ep.user_id = u.id
+             LEFT JOIN event_attendance ea 
+                ON ea.event_id = ep.event_id 
+               AND ea.user_id = ep.user_id
+             WHERE ep.event_id = ?
+             ORDER BY u.name ASC`,
+            [eventId]
+        );
+
+        // Catatan:
+        // - Peserta yang belum absen => ea.status = NULL
+        //   Di Android nanti kita anggap sebagai "Belum Absen" dan
+        //   digabung ke kelompok "Alfa/Belum Absen" di Ringkasan.
+
+        return res.json({
+            success: true,
+            message: 'Daftar peserta event',
+            data: rows
+        });
+
+    } catch (err) {
+        console.error("GET /events/:eventId/participants error:", err);
+        return res.status(500).json({
+            success: false,
+            message: 'Kesalahan server saat mengambil daftar peserta'
+        });
+    }
+});
+
+
+/* ============================================================
+   8. QR INVITATION – DETAIL & HAPUS
+   GET /api/events/:eventId/qr-invitation
+   DELETE /api/events/:eventId/qr-invitation
+============================================================ */
+
+router.get('/:eventId/qr-invitation', authMiddleware, async (req, res) => {
+    try {
+        const eventId = Number(req.params.eventId);
+        if (!eventId) {
+            return res.status(400).json({
+                success: false,
+                message: 'eventId tidak valid'
+            });
+        }
+
+        const event = await getEventById(eventId);
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message: 'Event tidak ditemukan'
+            });
+        }
+
+        const userId = req.userId;
+        const roleInEvent = await getEventParticipantRole(eventId, userId);
+        const isAdmin = req.userRole === 'admin';
+        const isEventCreator = event.created_by === userId;
+        const isPanitiaEvent = roleInEvent === 'panitia';
+
+        if (!isAdmin && !isEventCreator && !isPanitiaEvent) {
+            return res.status(403).json({
+                success: false,
+                message: 'Tidak berhak melihat QR undangan event ini'
+            });
+        }
+
+        const [rows] = await pool.query(
+            `SELECT id, event_id, qr_code, created_at
+             FROM qrinvitation
+             WHERE event_id = ?
+             LIMIT 1`,
+            [eventId]
+        );
+
+        if (rows.length === 0) {
+            return res.json({
+                success: false,
+                message: 'QR undangan belum dibuat',
+                data: null
+            });
+        }
+
+        return res.json({
+            success: true,
+            message: 'Detail QR undangan',
+            data: rows[0]
+        });
+
+    } catch (err) {
+        console.error("GET /events/:eventId/qr-invitation error:", err);
+        return res.status(500).json({
+            success: false,
+            message: 'Kesalahan server saat mengambil QR undangan'
+        });
+    }
+});
+
+router.delete('/:eventId/qr-invitation', authMiddleware, async (req, res) => {
+    try {
+        const eventId = Number(req.params.eventId);
+        if (!eventId) {
+            return res.status(400).json({
+                success: false,
+                message: 'eventId tidak valid'
+            });
+        }
+
+        const event = await getEventById(eventId);
+        if (!event) {
+            return res.status(404).json({
+                success: false,
+                message: 'Event tidak ditemukan'
+            });
+        }
+
+        const userId = req.userId;
+        const roleInEvent = await getEventParticipantRole(eventId, userId);
+        const isAdmin = req.userRole === 'admin';
+        const isEventCreator = event.created_by === userId;
+        const isPanitiaEvent = roleInEvent === 'panitia';
+
+        if (!isAdmin && !isEventCreator && !isPanitiaEvent) {
+            return res.status(403).json({
+                success: false,
+                message: 'Tidak berhak menghapus QR undangan event ini'
+            });
+        }
+
+        await pool.query(
+            `DELETE FROM qrinvitation WHERE event_id = ?`,
+            [eventId]
+        );
+
+        return res.json({
+            success: true,
+            message: 'QR undangan berhasil dihapus',
+            user: null // kompatibel dengan BasicResponse di Android
+        });
+
+    } catch (err) {
+        console.error("DELETE /events/:eventId/qr-invitation error:", err);
+        return res.status(500).json({
+            success: false,
+            message: 'Kesalahan server saat menghapus QR undangan'
+        });
+    }
+});
+
+>>>>>>> 1d97b52 (Enhance database schema and seed data for events, participants, attendance, and announcements)
 module.exports = router;

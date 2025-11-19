@@ -27,17 +27,13 @@ app.get('/', (req, res) => {
    MIDDLEWARE GLOBAL
    ============================ */
 
-// CORS – sementara dibuka semua origin (cocok untuk development / Android emulator)
+// CORS – sementara dibuka semua origin (development)
 app.use(cors({
   origin: '*',
 }));
 
 // Supaya bisa baca JSON body
 app.use(express.json());
-
-// (Opsional) kalau nanti butuh form-urlencoded:
-// app.use(express.urlencoded({ extended: true }));
-
 
 /* ============================
    ROUTES
@@ -76,7 +72,6 @@ app.listen(PORT, () => {
 
 =======
 });
-
 
 /* ============================
    START SERVER
