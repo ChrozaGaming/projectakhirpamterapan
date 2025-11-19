@@ -10,11 +10,29 @@ import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,6 +76,7 @@ fun EventCard(
                 .fillMaxWidth()
                 .padding(horizontal = 14.dp, vertical = 12.dp)
         ) {
+            // Header: judul + status
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -88,8 +107,7 @@ fun EventCard(
                         .background(
                             when (event.status) {
                                 "Akan Datang" -> colorScheme.primary.copy(alpha = 0.18f)
-                                "Berlangsung" -> Color(0xFF22C55E)
-                                    .copy(alpha = 0.18f)
+                                "Berlangsung" -> Color(0xFF22C55E).copy(alpha = 0.18f)
                                 else -> colorScheme.secondary.copy(alpha = 0.18f)
                             }
                         )
@@ -111,6 +129,7 @@ fun EventCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Lokasi + peserta
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -139,6 +158,7 @@ fun EventCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Tombol bawah
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -189,8 +209,10 @@ fun QrInviteDialog(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // Pastikan EventUiModel punya field: val qrCode: String
-    val qrContent = event.qrCode.ifBlank { "EVENT-${event.id}" }
+    // FIX: handle nullable qrCode dengan safe call
+    val qrContent = event.qrCode
+        ?.ifBlank { "EVENT-${event.id}" }
+        ?: "EVENT-${event.id}"
 
     val qrBitmap = remember(qrContent) {
         generateQrBitmap(qrContent, size = 600)
@@ -218,7 +240,7 @@ fun QrInviteDialog(
                         .padding(horizontal = 20.dp, vertical = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // header
+                    // Header
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -254,6 +276,7 @@ fun QrInviteDialog(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // QR Image
                     if (qrBitmap != null) {
                         Box(
                             modifier = Modifier

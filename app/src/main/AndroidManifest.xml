@@ -2,12 +2,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Izin Akses Internet untuk akses API -->
+    <!-- Izin akses Internet untuk API -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Izin tulis storage (untuk simpan QR ke galeri, jika diperlukan) -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
+
+    <!-- Izin kamera untuk scan QR code -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- (Opsional tapi bagus) Menandai bahwa aplikasi memakai kamera belakang -->
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="false" />
 
     <application
         android:allowBackup="true"

@@ -6,5 +6,5 @@ data class CreateEventRequest(
     val event_date: String,
     val event_time: String,
     val location: String,
-    val status: String
+    val status: String? = null
 )

@@ -1,6 +1,5 @@
 package com.example.projectakhirpamterapan.model
 
-data class QrInvitation(
-    val event_id: Int,
+data class JoinByQrRequest(
     val qr_code: String
 )
