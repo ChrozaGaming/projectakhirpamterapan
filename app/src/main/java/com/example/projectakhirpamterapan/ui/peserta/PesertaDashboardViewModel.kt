@@ -20,7 +20,7 @@ fun formatIndonesianDate(date: String?): String {
     return try {
         if (date.isNullOrBlank()) return "-"
         val parser = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val formatter = SimpleDateFormat("dd MMMM yyyy", Locale("id"))
+        val formatter = SimpleDateFormat("dd MMMM yyyy", Locale("id", "ID"))
         formatter.format(parser.parse(date)!!)
     } catch (e: Exception) {
         "-"
@@ -31,8 +31,9 @@ fun formatIndonesianTime(time: String?): String {
     return try {
         if (time.isNullOrBlank()) return "-"
         val parser = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-        val formatter = SimpleDateFormat("HH.mm", Locale("id"))
-        "${formatter.format(parser.parse(time)!!)} WIB"
+        val formatter = SimpleDateFormat("HH.mm", Locale("id", "ID"))
+        // Kembaliannya TANPA "WIB" supaya UI yang nambah
+        formatter.format(parser.parse(time)!!)
     } catch (e: Exception) {
         "-"
     }
@@ -50,7 +51,10 @@ data class PesertaEventUiModel(
     val location: String,
     val status: String,
     val participants: Int,
-    val qrCode: String?
+    val qrCode: String?,
+    // RAW dari DB (events)
+    val eventDateRaw: String?,
+    val eventTimeRaw: String?
 )
 
 data class PesertaDashboardUiState(
@@ -126,7 +130,9 @@ class PesertaDashboardViewModel(
             location = location,
             status = status,
             participants = participants,
-            qrCode = qr_code
+            qrCode = qr_code,
+            eventDateRaw = event_date,
+            eventTimeRaw = event_time
         )
     }
 }

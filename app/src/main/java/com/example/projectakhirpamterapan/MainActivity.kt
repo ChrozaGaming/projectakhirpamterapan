@@ -1,11 +1,11 @@
 package com.example.projectakhirpamterapan
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,9 +13,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.compose.runtime.remember
 import com.example.projectakhirpamterapan.data.EventRepository
 import com.example.projectakhirpamterapan.data.remote.ApiConfig
@@ -29,6 +31,9 @@ import com.example.projectakhirpamterapan.ui.panitia.PanitiaDashboardViewModelFa
 import com.example.projectakhirpamterapan.ui.peserta.PesertaDashboardScreen
 import com.example.projectakhirpamterapan.ui.peserta.PesertaDashboardViewModel
 import com.example.projectakhirpamterapan.ui.peserta.PesertaDashboardViewModelFactory
+import com.example.projectakhirpamterapan.ui.peserta.kelolaevent.PesertaKelolaEventScreen
+import com.example.projectakhirpamterapan.ui.peserta.kelolaevent.PesertaKelolaEventViewModel
+import com.example.projectakhirpamterapan.ui.peserta.kelolaevent.PesertaKelolaEventViewModelFactory
 import com.example.projectakhirpamterapan.ui.role.RoleSelectionScreen
 import com.example.projectakhirpamterapan.ui.theme.ProjectakhirpamterapanTheme
 
@@ -37,7 +42,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // WARNA STATUS BAR & NAV BAR (dark)
         val systemColor = Color(0xFF020617).toArgb()
         window.statusBarColor = systemColor
         window.navigationBarColor = systemColor
@@ -122,13 +126,87 @@ class MainActivity : ComponentActivity() {
                             vm = pesertaVm,
                             userName = user.name,
                             onBackToRole = {
-                                // kembali ke pilih role
                                 navController.popBackStack()
                                 navController.navigate("role") {
                                     popUpTo("role") { inclusive = false }
                                     launchSingleTop = true
                                 }
+                            },
+                            onOpenEventDetail = { eventId, eventTitle, eventDate, eventTime, eventLocation, eventStatus ->
+                                navController.navigate(
+                                    "pesertaEventDetail/$eventId/" +
+                                            "${Uri.encode(eventTitle)}/" +
+                                            "${Uri.encode(eventDate ?: "")}/" +
+                                            "${Uri.encode(eventTime ?: "")}/" +
+                                            "${Uri.encode(eventLocation)}/" +
+                                            "${Uri.encode(eventStatus)}"
+                                )
                             }
+                        )
+                    }
+
+                    // ========== DETAIL / KELOLA EVENT PESERTA ==========
+                    composable(
+                        route = "pesertaEventDetail/{eventId}/{eventTitle}/{eventDate}/{eventTime}/{eventLocation}/{eventStatus}",
+                        arguments = listOf(
+                            navArgument("eventId") { type = NavType.IntType },
+                            navArgument("eventTitle") { type = NavType.StringType },
+                            navArgument("eventDate") { type = NavType.StringType },
+                            navArgument("eventTime") { type = NavType.StringType },
+                            navArgument("eventLocation") { type = NavType.StringType },
+                            navArgument("eventStatus") { type = NavType.StringType }
+                        )
+                    ) { backStackEntry ->
+                        val user = authVm.loginState.user
+                        val token = authVm.loginState.token
+
+                        if (user == null || token.isNullOrBlank()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("Sesi berakhir. Silakan login ulang.")
+                            }
+                            return@composable
+                        }
+
+                        val eventId = backStackEntry.arguments?.getInt("eventId") ?: run {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("Event tidak ditemukan.")
+                            }
+                            return@composable
+                        }
+
+                        val eventTitle =
+                            backStackEntry.arguments?.getString("eventTitle") ?: "Detail Event"
+                        val eventDate =
+                            backStackEntry.arguments?.getString("eventDate") ?: ""
+                        val eventTime =
+                            backStackEntry.arguments?.getString("eventTime") ?: ""
+                        val eventLocation =
+                            backStackEntry.arguments?.getString("eventLocation") ?: "-"
+                        val eventStatus =
+                            backStackEntry.arguments?.getString("eventStatus") ?: "Akan Datang"
+
+                        val kelolaFactory = PesertaKelolaEventViewModelFactory(
+                            eventRepository = eventRepository,
+                            authToken = token,
+                            eventId = eventId
+                        )
+                        val kelolaVm: PesertaKelolaEventViewModel =
+                            viewModel(factory = kelolaFactory)
+
+                        PesertaKelolaEventScreen(
+                            vm = kelolaVm,
+                            eventTitle = eventTitle,
+                            eventLocation = eventLocation,
+                            eventDate = eventDate,
+                            eventTime = eventTime,
+                            eventStatus = eventStatus,
+                            onBack = { navController.popBackStack() }
                         )
                     }
 
@@ -187,7 +265,6 @@ class MainActivity : ComponentActivity() {
                                 navController.popBackStack()
                             },
                             onSuccess = {
-                                // tutup createEvent, lalu refresh dashboard panitia
                                 navController.popBackStack()
                                 navController.navigate("panitiaDashboard") {
                                     popUpTo("panitiaDashboard") {

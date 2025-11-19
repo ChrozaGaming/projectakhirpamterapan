@@ -11,3 +11,4 @@ data class Event(
     val participants: Int,
     val qr_code: String? = null
 )
+
