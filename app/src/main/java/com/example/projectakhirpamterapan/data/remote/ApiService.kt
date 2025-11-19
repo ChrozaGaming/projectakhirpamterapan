@@ -1,8 +1,13 @@
 package com.example.projectakhirpamterapan.data.remote
 
+import com.example.projectakhirpamterapan.model.AttendanceRequest
 import com.example.projectakhirpamterapan.model.BasicResponse
+import com.example.projectakhirpamterapan.model.CreateAnnouncementRequest
 import com.example.projectakhirpamterapan.model.CreateEventRequest
 import com.example.projectakhirpamterapan.model.Event
+import com.example.projectakhirpamterapan.model.EventAttendanceResponse
+import com.example.projectakhirpamterapan.model.EventAnnouncementResponse
+import com.example.projectakhirpamterapan.model.EventAnnouncementsResponse
 import com.example.projectakhirpamterapan.model.EventsResponse
 import com.example.projectakhirpamterapan.model.JoinByQrRequest
 import com.example.projectakhirpamterapan.model.JoinEventResponse
@@ -74,4 +79,34 @@ interface ApiService {
         @Header("Authorization") authHeader: String,
         @Body body: JoinByQrRequest   // body: { "qr_code": "ABC123..." }
     ): Response<JoinEventResponse>
+
+    // ================= ABSENSI PESERTA =================
+
+    @GET("events/{eventId}/attendance/me")
+    suspend fun getMyAttendance(
+        @Header("Authorization") authHeader: String,
+        @Path("eventId") eventId: Int
+    ): Response<EventAttendanceResponse>
+
+    @POST("events/{eventId}/attendance/check-in")
+    suspend fun checkInAttendance(
+        @Header("Authorization") authHeader: String,
+        @Path("eventId") eventId: Int,
+        @Body body: AttendanceRequest
+    ): Response<EventAttendanceResponse>
+
+    // ================= ANNOUNCEMENTS EVENT =================
+
+    @GET("events/{eventId}/announcements")
+    suspend fun getEventAnnouncements(
+        @Header("Authorization") authHeader: String,
+        @Path("eventId") eventId: Int
+    ): Response<EventAnnouncementsResponse>
+
+    @POST("events/{eventId}/announcements")
+    suspend fun createEventAnnouncement(
+        @Header("Authorization") authHeader: String,
+        @Path("eventId") eventId: Int,
+        @Body body: CreateAnnouncementRequest
+    ): Response<EventAnnouncementResponse>
 }
