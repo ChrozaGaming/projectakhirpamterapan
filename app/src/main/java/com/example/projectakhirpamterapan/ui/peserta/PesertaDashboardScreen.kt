@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,12 +42,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
 import com.example.projectakhirpamterapan.ui.peserta.components.JoinEventDialog
 import com.example.projectakhirpamterapan.ui.peserta.components.PesertaEventCard
 import com.example.projectakhirpamterapan.ui.peserta.components.PesertaHeroSection
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,14 +105,17 @@ fun PesertaDashboardScreen(
     }
 
     Scaffold(
+        containerColor = Color.White,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Dashboard Peserta") },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White),
+                title = { Text("Dashboard Peserta", color = Color(0xFF1E40AF)) },
                 navigationIcon = {
                     IconButton(onClick = onBackToRole) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Kembali"
+                            contentDescription = "Kembali",
+                            tint = Color(0xFF1E40AF)
                         )
                     }
                 }
@@ -200,11 +208,24 @@ fun PesertaDashboardScreen(
                         item {
                             Spacer(Modifier.height(8.dp))
                             Box(
-                                modifier = Modifier.fillMaxSize(),
+                                modifier = Modifier
+                                    .fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                TextButton(onClick = { showJoinDialog = true }) {
-                                    Text("Masukkan kode QR secara manual")
+                                TextButton(
+                                    onClick = { showJoinDialog = true },
+                                    colors = ButtonDefaults.textButtonColors(
+                                        containerColor = Color.White,
+                                        contentColor = Color(0xFF1E40AF)
+                                    ),
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.shadow(
+                                        elevation = 10.dp,          // tipis
+                                        shape = RoundedCornerShape(20.dp),
+                                        clip = false               // agar shadow terlihat
+                                    )
+                                ) {
+                                    Text("Masukkan Kode Event")
                                 }
                             }
                         }

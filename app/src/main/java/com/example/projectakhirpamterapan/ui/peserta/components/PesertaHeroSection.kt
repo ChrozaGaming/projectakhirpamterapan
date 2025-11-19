@@ -22,7 +22,7 @@ fun PesertaHeroSection(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
+        shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
         )
@@ -32,20 +32,21 @@ fun PesertaHeroSection(
                 .background(
                     Brush.linearGradient(
                         colors = listOf(
-                            colorScheme.primary.copy(alpha = 0.20f),
-                            colorScheme.surfaceVariant.copy(alpha = 0.90f)
+                            Color(0xFF1E40AF),
+                            Color(0xFF0D1B49)
                         )
                     ),
-                    shape = RoundedCornerShape(22.dp)
+                    shape = RoundedCornerShape(10.dp)
                 )
-                .padding(horizontal = 18.dp, vertical = 16.dp)
+                .padding(start = 18.dp, end = 48.dp, top = 16.dp, bottom = 16.dp)
         ) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
                     text = "Halo, ${userName ?: "Peserta"} 👋",
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White
                 )
                 Text(
                     text = "Ini adalah daftar event yang kamu ikuti.",
@@ -55,7 +56,8 @@ fun PesertaHeroSection(
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
                     text = "Total event terdaftar: $totalEvents",
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color.White
                 )
             }
         }
