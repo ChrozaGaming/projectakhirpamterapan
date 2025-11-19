@@ -3,12 +3,16 @@ package com.example.projectakhirpamterapan.data
 import com.example.projectakhirpamterapan.data.remote.ApiService
 import com.example.projectakhirpamterapan.model.AttendanceRequest
 import com.example.projectakhirpamterapan.model.BasicResponse
+import com.example.projectakhirpamterapan.model.CreateAnnouncementRequest
 import com.example.projectakhirpamterapan.model.CreateEventRequest
 import com.example.projectakhirpamterapan.model.Event
 import com.example.projectakhirpamterapan.model.EventAnnouncement
+import com.example.projectakhirpamterapan.model.EventAnnouncementResponse
 import com.example.projectakhirpamterapan.model.EventAnnouncementsResponse
 import com.example.projectakhirpamterapan.model.EventAttendance
 import com.example.projectakhirpamterapan.model.EventAttendanceResponse
+import com.example.projectakhirpamterapan.model.EventParticipant
+import com.example.projectakhirpamterapan.model.EventParticipantsResponse
 import com.example.projectakhirpamterapan.model.EventsResponse
 import com.example.projectakhirpamterapan.model.JoinByQrRequest
 import com.example.projectakhirpamterapan.model.JoinEventResponse
@@ -38,7 +42,7 @@ class EventRepository(
         }
     }
 
-    // =================== PANITIA ===================
+    // =================== PANITIA – LIST EVENT ===================
 
     suspend fun getPanitiaEvents(
         authToken: String,
@@ -126,7 +130,7 @@ class EventRepository(
         }
     }
 
-    // =================== PESERTA ===================
+    // =================== PESERTA – LIST EVENT ===================
 
     suspend fun getPesertaEvents(
         authToken: String,
@@ -177,7 +181,7 @@ class EventRepository(
         }
     }
 
-    // =================== ABSENSI PESERTA ===================
+    // =================== ABSENSI PESERTA (VIEW PESERTA) ===================
 
     suspend fun getMyAttendance(
         authToken: String,
@@ -268,8 +272,6 @@ class EventRepository(
         }
     }
 
-    // Kalau nanti mau buat announcement dari app (panitia):
-    /*
     suspend fun createEventAnnouncement(
         authToken: String,
         eventId: Int,
@@ -300,5 +302,34 @@ class EventRepository(
             Result.failure(e)
         }
     }
-    */
+
+    // =================== PANITIA – PESERTA + ABSENSI EVENT ===================
+
+    suspend fun getEventParticipantsForPanitia(
+        authToken: String,
+        eventId: Int
+    ): Result<List<EventParticipant>> {
+        return try {
+            val response = apiService.getEventParticipants(
+                authHeader = "Bearer $authToken",
+                eventId = eventId
+            )
+
+            if (response.isSuccessful) {
+                val body: EventParticipantsResponse? = response.body()
+                if (body != null && body.success) {
+                    Result.success(body.data ?: emptyList())
+                } else {
+                    Result.failure(Exception(body?.message ?: "Gagal memuat peserta event"))
+                }
+            } else {
+                Result.failure(
+                    Exception("Error ${response.code()}: ${response.errorBody()?.string()}")
+                )
+            }
+
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

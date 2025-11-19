@@ -8,6 +8,7 @@ import com.example.projectakhirpamterapan.model.Event
 import com.example.projectakhirpamterapan.model.EventAttendanceResponse
 import com.example.projectakhirpamterapan.model.EventAnnouncementResponse
 import com.example.projectakhirpamterapan.model.EventAnnouncementsResponse
+import com.example.projectakhirpamterapan.model.EventParticipantsResponse
 import com.example.projectakhirpamterapan.model.EventsResponse
 import com.example.projectakhirpamterapan.model.JoinByQrRequest
 import com.example.projectakhirpamterapan.model.JoinEventResponse
@@ -54,13 +55,13 @@ interface ApiService {
 
     // ================= QR INVITATION =================
 
-    @GET("events/{eventId}/qrinvitation")
+    @GET("events/{eventId}/qr-invitation")
     suspend fun getQrInvitation(
         @Header("Authorization") authHeader: String,
         @Path("eventId") eventId: Int
     ): Response<QrInvitationResponse>
 
-    @DELETE("events/{eventId}/qrinvitation")
+    @DELETE("events/{eventId}/qr-invitation")
     suspend fun deleteQrInvitation(
         @Header("Authorization") authHeader: String,
         @Path("eventId") eventId: Int
@@ -109,4 +110,12 @@ interface ApiService {
         @Path("eventId") eventId: Int,
         @Body body: CreateAnnouncementRequest
     ): Response<EventAnnouncementResponse>
+
+    // ================= DETAIL PESERTA + ABSENSI UNTUK PANITIA =================
+
+    @GET("events/{eventId}/participants")
+    suspend fun getEventParticipants(
+        @Header("Authorization") authHeader: String,
+        @Path("eventId") eventId: Int
+    ): Response<EventParticipantsResponse>
 }

@@ -27,7 +27,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,7 +56,8 @@ import kotlinx.coroutines.withContext
 @Composable
 fun EventCard(
     event: EventUiModel,
-    onShowQr: () -> Unit
+    onShowQr: () -> Unit,
+    onManageEvent: () -> Unit
 ) {
     val colorScheme = MaterialTheme.colorScheme
 
@@ -69,7 +69,10 @@ fun EventCard(
         colors = CardDefaults.cardColors(
             containerColor = colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onManageEvent() } // klik seluruh kartu = Kelola
     ) {
         Column(
             modifier = Modifier
@@ -179,11 +182,12 @@ fun EventCard(
                     )
                 }
 
-                // Tombol Kelola (placeholder)
+                // Tombol Kelola
                 Box(
                     modifier = Modifier
                         .clip(CircleShape)
                         .background(colorScheme.primary)
+                        .clickable { onManageEvent() }
                         .padding(horizontal = 12.dp, vertical = 6.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -209,7 +213,7 @@ fun QrInviteDialog(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // FIX: handle nullable qrCode dengan safe call
+    // handle nullable qrCode
     val qrContent = event.qrCode
         ?.ifBlank { "EVENT-${event.id}" }
         ?: "EVENT-${event.id}"
