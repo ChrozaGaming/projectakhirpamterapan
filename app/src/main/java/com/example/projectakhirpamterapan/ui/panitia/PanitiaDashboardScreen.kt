@@ -6,48 +6,64 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import com.example.projectakhirpamterapan.ui.panitia.components.*
+import com.example.projectakhirpamterapan.ui.panitia.components.EmptyStateCard
+import com.example.projectakhirpamterapan.ui.panitia.components.ErrorBanner
+import com.example.projectakhirpamterapan.ui.panitia.components.EventCard
+import com.example.projectakhirpamterapan.ui.panitia.components.EventSkeletonCard
+import com.example.projectakhirpamterapan.ui.panitia.components.FilterAndSearchRow
+import com.example.projectakhirpamterapan.ui.panitia.components.HeroSection
+import com.example.projectakhirpamterapan.ui.panitia.components.QrInviteDialog
+import com.example.projectakhirpamterapan.ui.panitia.components.VerticalScrollbar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PanitiaDashboardScreen(
     vm: PanitiaDashboardViewModel,
     userName: String? = null,
-    onCreateEvent: () -> Unit = {}
+    onCreateEvent: () -> Unit = {},
+    onBackToRole: () -> Unit = {},
+    onOpenEventDetail: (Int, String, String, String, String, String) -> Unit = { _, _, _, _, _, _ -> }
 ) {
     val uiState by vm.uiState.collectAsState()
     val colorScheme = MaterialTheme.colorScheme
     val listState = rememberLazyListState()
-
     val (searchQuery, setSearchQuery) = remember { mutableStateOf("") }
 
-    // state dialog QR
+    // State dialog QR
     var selectedEventForQr by remember { mutableStateOf<EventUiModel?>(null) }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.White
+                ),
                 title = {
                     Text(
                         text = "Dashboard Panitia",
+                        color = Color(0xFF1E40AF),
                         style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold
                         )
                     )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackToRole) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Kembali",
+                            tint = Color(0xFF1E40AF)
+                        )
+                    }
                 }
             )
         },
@@ -63,12 +79,12 @@ fun PanitiaDashboardScreen(
                 )
             }
         },
-        containerColor = colorScheme.background
+        containerColor = Color.White
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(colorScheme.background)
+                .background(Color.White)
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
@@ -103,15 +119,15 @@ fun PanitiaDashboardScreen(
             Text(
                 text = "Daftar Event Kamu",
                 style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold
                 ),
-                color = colorScheme.onBackground,
+                color = Color.Black,
                 modifier = Modifier.padding(bottom = 4.dp)
             )
             Text(
                 text = "Scroll ke bawah untuk melihat semua event yang kamu pegang.",
                 style = MaterialTheme.typography.bodySmall,
-                color = colorScheme.onBackground.copy(alpha = 0.7f)
+                color = Color.Black
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -199,7 +215,17 @@ fun PanitiaDashboardScreen(
                             items(filteredEvents, key = { it.id }) { event ->
                                 EventCard(
                                     event = event,
-                                    onShowQr = { selectedEventForQr = event }
+                                    onShowQr = { selectedEventForQr = event },
+                                    onOpenDetail = {
+                                        onOpenEventDetail(
+                                            event.id,
+                                            event.title,
+                                            event.date,
+                                            event.time,
+                                            event.location,
+                                            event.status
+                                        )
+                                    }
                                 )
                             }
                         }

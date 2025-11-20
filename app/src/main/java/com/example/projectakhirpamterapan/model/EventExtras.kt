@@ -1,6 +1,5 @@
 package com.example.projectakhirpamterapan.model
 
-
 /* ==============================
    ABSENSI EVENT
    ============================== */
@@ -52,4 +51,23 @@ data class EventAnnouncementResponse(
 data class CreateAnnouncementRequest(
     val title: String,
     val body: String
+)
+
+/* ==============================
+   PARTICIPANTS (JOIN events + event_participants + users + attendance)
+   ============================== */
+
+data class EventParticipant(
+    val user_id: Int,
+    val name: String,
+    val email: String,
+    val role_in_event: String,   // 'peserta' / 'panitia'
+    val status: String?,         // 'hadir' | 'izin' | 'alfa' | null (belum absen)
+    val checked_in_at: String?   // bisa null kalau belum pernah absen
+)
+
+data class EventParticipantsResponse(
+    val success: Boolean,
+    val message: String?,
+    val data: List<EventParticipant>?
 )

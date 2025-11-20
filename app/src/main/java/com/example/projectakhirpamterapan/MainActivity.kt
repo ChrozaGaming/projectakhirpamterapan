@@ -28,6 +28,9 @@ import com.example.projectakhirpamterapan.ui.panitia.CreateEventScreen
 import com.example.projectakhirpamterapan.ui.panitia.PanitiaDashboardScreen
 import com.example.projectakhirpamterapan.ui.panitia.PanitiaDashboardViewModel
 import com.example.projectakhirpamterapan.ui.panitia.PanitiaDashboardViewModelFactory
+import com.example.projectakhirpamterapan.ui.panitia.kelolaevent.PanitiaKelolaEventScreen
+import com.example.projectakhirpamterapan.ui.panitia.kelolaevent.PanitiaKelolaEventViewModel
+import com.example.projectakhirpamterapan.ui.panitia.kelolaevent.PanitiaKelolaEventViewModelFactory
 import com.example.projectakhirpamterapan.ui.peserta.PesertaDashboardScreen
 import com.example.projectakhirpamterapan.ui.peserta.PesertaDashboardViewModel
 import com.example.projectakhirpamterapan.ui.peserta.PesertaDashboardViewModelFactory
@@ -42,6 +45,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Force dark system bars
         val systemColor = Color(0xFF020617).toArgb()
         window.statusBarColor = systemColor
         window.navigationBarColor = systemColor
@@ -52,7 +56,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ProjectakhirpamterapanTheme(darkTheme = true) {
-
                 val navController = rememberNavController()
                 val authVm: AuthViewModel = viewModel()
 
@@ -132,14 +135,14 @@ class MainActivity : ComponentActivity() {
                                     launchSingleTop = true
                                 }
                             },
-                            onOpenEventDetail = { eventId, eventTitle, eventDate, eventTime, eventLocation, eventStatus ->
+                            onOpenEventDetail = { eventId, title, date, time, location, status ->
                                 navController.navigate(
                                     "pesertaEventDetail/$eventId/" +
-                                            "${Uri.encode(eventTitle)}/" +
-                                            "${Uri.encode(eventDate ?: "")}/" +
-                                            "${Uri.encode(eventTime ?: "")}/" +
-                                            "${Uri.encode(eventLocation)}/" +
-                                            "${Uri.encode(eventStatus)}"
+                                            "${Uri.encode(title)}/" +
+                                            "${Uri.encode(date)}/" +
+                                            "${Uri.encode(time)}/" +
+                                            "${Uri.encode(location)}/" +
+                                            "${Uri.encode(status)}"
                                 )
                             }
                         )
@@ -220,7 +223,7 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("Silakan login ulang.")
+                                Text("Sesi berakhir. Silakan login ulang.")
                             }
                             return@composable
                         }
@@ -238,7 +241,89 @@ class MainActivity : ComponentActivity() {
                             userName = user.name,
                             onCreateEvent = {
                                 navController.navigate("createEvent")
+                            },
+                            onBackToRole = {
+                                navController.popBackStack()
+                                navController.navigate("role") {
+                                    popUpTo("role") { inclusive = false }
+                                    launchSingleTop = true
+                                }
+                            },
+                            onOpenEventDetail = { eventId, title, date, time, location, status ->
+                                navController.navigate(
+                                    "panitiaEventDetail/$eventId/" +
+                                            "${Uri.encode(title)}/" +
+                                            "${Uri.encode(date)}/" +
+                                            "${Uri.encode(time)}/" +
+                                            "${Uri.encode(location)}/" +
+                                            "${Uri.encode(status)}"
+                                )
                             }
+                        )
+                    }
+
+                    // ========== DETAIL / KELOLA EVENT PANITIA ==========
+                    composable(
+                        route = "panitiaEventDetail/{eventId}/{eventTitle}/{eventDate}/{eventTime}/{eventLocation}/{eventStatus}",
+                        arguments = listOf(
+                            navArgument("eventId") { type = NavType.IntType },
+                            navArgument("eventTitle") { type = NavType.StringType },
+                            navArgument("eventDate") { type = NavType.StringType },
+                            navArgument("eventTime") { type = NavType.StringType },
+                            navArgument("eventLocation") { type = NavType.StringType },
+                            navArgument("eventStatus") { type = NavType.StringType }
+                        )
+                    ) { backStackEntry ->
+                        val user = authVm.loginState.user
+                        val token = authVm.loginState.token
+
+                        if (user == null || token.isNullOrBlank()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("Sesi berakhir. Silakan login ulang.")
+                            }
+                            return@composable
+                        }
+
+                        val eventId = backStackEntry.arguments?.getInt("eventId") ?: run {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("Event tidak ditemukan.")
+                            }
+                            return@composable
+                        }
+
+                        val eventTitle =
+                            backStackEntry.arguments?.getString("eventTitle") ?: "Kelola Event"
+                        val eventDate =
+                            backStackEntry.arguments?.getString("eventDate") ?: ""
+                        val eventTime =
+                            backStackEntry.arguments?.getString("eventTime") ?: ""
+                        val eventLocation =
+                            backStackEntry.arguments?.getString("eventLocation") ?: "-"
+                        val eventStatus =
+                            backStackEntry.arguments?.getString("eventStatus") ?: "Akan Datang"
+
+                        val kelolaFactory = PanitiaKelolaEventViewModelFactory(
+                            eventRepository = eventRepository,
+                            authToken = token,
+                            eventId = eventId
+                        )
+                        val kelolaVm: PanitiaKelolaEventViewModel =
+                            viewModel(factory = kelolaFactory)
+
+                        PanitiaKelolaEventScreen(
+                            vm = kelolaVm,
+                            eventTitle = eventTitle,
+                            eventLocation = eventLocation,
+                            eventDate = eventDate,
+                            eventTime = eventTime,
+                            eventStatus = eventStatus,
+                            onBack = { navController.popBackStack() }
                         )
                     }
 

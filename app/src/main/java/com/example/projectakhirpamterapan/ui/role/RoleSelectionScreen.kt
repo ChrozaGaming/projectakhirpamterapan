@@ -1,6 +1,9 @@
 package com.example.projectakhirpamterapan.ui.role
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -19,19 +21,23 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,71 +47,52 @@ fun RoleSelectionScreen(
     onPanitiaSelected: () -> Unit
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    val isDark = isSystemInDarkTheme()
 
-    // Gradient disesuaikan supaya enak di light & dark
-    val topColor = if (isDark) {
-        colorScheme.surfaceVariant.copy(alpha = 0.4f)
-    } else {
-        colorScheme.primary.copy(alpha = 0.08f)
-    }
-    val bottomColor = colorScheme.background
-
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Pilih Peran",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
-                }
-            )
-        }
-    ) { innerPadding ->
+    Scaffold { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(topColor, bottomColor)
-                    )
-                )
-                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .background(Color(0xFFFFFFFF))
+                .padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 20.dp),
+            contentAlignment = Alignment.TopCenter
         ) {
             // HEADER + 2 CARD di tengah
             Column(
                 modifier = Modifier
-                    .align(Alignment.Center)
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Image(
+                    painter = androidx.compose.ui.res.painterResource(id = com.example.projectakhirpamterapan.R.drawable.logo_eventaura),
+                    contentDescription = "Login Illustration",
+                    modifier = Modifier
+                        .size(200.dp),
+                    contentScale = ContentScale.Fit
+                )
                 Text(
                     text = "Halo, ${userName ?: "Mahasiswa"} 👋",
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold
-                    )
+                    ),
+                    color = Color(0xFF1E40AF)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Pilih cara kamu masuk ke sistem event kampus.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = colorScheme.onBackground.copy(alpha = 0.85f),
+                    color = Color.Black,
                     textAlign = TextAlign.Center
                 )
 
                 Spacer(modifier = Modifier.height(18.dp))
 
                 // Row dua kartu, sama tinggi
-                Row(
+                Column (
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(IntrinsicSize.Min),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     RoleCardEqualHeight(
                         emoji = "👥",
@@ -168,15 +155,16 @@ private fun RoleCardEqualHeight(
 ) {
     val scheme = MaterialTheme.colorScheme
     val bgColor =
-        if (isPrimary) scheme.primaryContainer else scheme.secondaryContainer
+        if (isPrimary) Color(0xFF1E40AF) else Color(0xFFFFFFFF)
     val onBgColor =
-        if (isPrimary) scheme.onPrimaryContainer else scheme.onSecondaryContainer
+        if (isPrimary) Color(0xFFFFFFFF) else Color(0xFF1E40AF)
 
     Card(
-        modifier = modifier.heightIn(min = 180.dp),
+        modifier = modifier,
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         colors = CardDefaults.cardColors(containerColor = bgColor),
+        border = if (!isPrimary) BorderStroke(2.dp, Color(0xFF1E40AF)) else null,
         onClick = onClick
     ) {
         Column(
@@ -185,75 +173,88 @@ private fun RoleCardEqualHeight(
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(20.dp)
             ) {
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .background(
+                            color = onBgColor.copy(alpha = 0.08f),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = emoji,
+                        fontSize = 30.sp
+                    )
+                }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(34.dp)
-                            .background(
-                                color = onBgColor.copy(alpha = 0.08f),
-                                shape = CircleShape
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = emoji,
-                            fontSize = 18.sp
-                        )
-                    }
 
-                    Column {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.SemiBold
-                            ),
-                            color = onBgColor
-                        )
-                        Text(
-                            text = subtitle,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = onBgColor.copy(alpha = 0.9f),
-                            maxLines = 1
-                        )
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ){
+                        Column {
+                            Text(
+                                text = title,
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.SemiBold
+                                ),
+                                color = onBgColor
+                            )
+                            Text(
+                                text = subtitle,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = onBgColor.copy(alpha = 0.9f),
+                                maxLines = 1
+                            )
+                        }
+                        Column {
+                            Text(
+                                text = "• $bullet1",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = onBgColor
+                            )
+                            Text(
+                                text = "• $bullet2",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = onBgColor
+                            )
+                            Text(
+                                text = "• $bullet3",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = onBgColor
+                            )
+                        }
                     }
                 }
-
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(
-                        text = "• $bullet1",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = onBgColor
-                    )
-                    Text(
-                        text = "• $bullet2",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = onBgColor
-                    )
-                    Text(
-                        text = "• $bullet3",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = onBgColor
-                    )
-                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = "Arrow",
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(top = 6.dp)
+                        .size(28.dp),
+                    tint = onBgColor
+                )
             }
 
-            Text(
-                text = footer,
-                style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.Medium
-                ),
-                color = onBgColor,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 6.dp),
-                textAlign = TextAlign.Start
-            )
+
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun RoleSelectionScreenPreview() {
+    RoleSelectionScreen(
+        userName = "John Doe",
+        onPesertaSelected = {},
+        onPanitiaSelected = {}
+    )
 }

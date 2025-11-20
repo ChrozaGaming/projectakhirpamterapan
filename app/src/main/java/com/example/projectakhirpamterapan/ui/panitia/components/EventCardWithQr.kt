@@ -9,6 +9,7 @@ import android.provider.MediaStore
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,15 +28,15 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -57,7 +58,8 @@ import kotlinx.coroutines.withContext
 @Composable
 fun EventCard(
     event: EventUiModel,
-    onShowQr: () -> Unit
+    onShowQr: () -> Unit,
+    onOpenDetail: () -> Unit
 ) {
     val colorScheme = MaterialTheme.colorScheme
 
@@ -65,9 +67,22 @@ fun EventCard(
     val formattedTime = formatIndonesianTime(event.time)
 
     Card(
+        modifier = Modifier
+            .border(
+                width = 2.dp,
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFF0D1B49),
+                        Color(0xFF1E40AF)
+                    )
+                ),
+                shape = RoundedCornerShape(18.dp)
+            )
+            // 👉 klik di mana saja pada card (kecuali area yang punya clickable sendiri)
+            .clickable { onOpenDetail() },
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
-            containerColor = colorScheme.surface
+            containerColor = Color.White
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
@@ -91,13 +106,14 @@ fun EventCard(
                             fontWeight = FontWeight.SemiBold
                         ),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = Color(0xFF1E40AF)
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "📅 $formattedDate • $formattedTime",
                         style = MaterialTheme.typography.bodySmall,
-                        color = colorScheme.onSurface.copy(alpha = 0.8f)
+                        color = Color(0xFF1E40AF)
                     )
                 }
 
@@ -106,7 +122,7 @@ fun EventCard(
                         .clip(RoundedCornerShape(50))
                         .background(
                             when (event.status) {
-                                "Akan Datang" -> colorScheme.primary.copy(alpha = 0.18f)
+                                "Akan Datang" -> Color(0xFF3B82F6).copy(alpha = 0.18f)
                                 "Berlangsung" -> Color(0xFF22C55E).copy(alpha = 0.18f)
                                 else -> colorScheme.secondary.copy(alpha = 0.18f)
                             }
@@ -115,7 +131,7 @@ fun EventCard(
                     contentAlignment = Alignment.Center
                 ) {
                     val statusColor = when (event.status) {
-                        "Akan Datang" -> colorScheme.primary
+                        "Akan Datang" -> Color(0xFF1E40AF)
                         "Berlangsung" -> Color(0xFF22C55E)
                         else -> colorScheme.secondary
                     }
@@ -161,36 +177,44 @@ fun EventCard(
             // Tombol bawah
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Tombol Show QR Invite
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(999.dp))
-                        .background(colorScheme.primary.copy(alpha = 0.12f))
+                        .background(Color(0xFFB1C3FF))
                         .clickable { onShowQr() }
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
                         text = "Show QR Invite",
                         style = MaterialTheme.typography.labelMedium,
-                        color = colorScheme.primary
+                        color = Color(0xFF1E40AF)
                     )
                 }
 
-                // Tombol Kelola (placeholder)
+                // Tombol Kelola → buka screen kelola event
                 Box(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .background(colorScheme.primary)
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(
+                                    Color(0xFF0D1B49),
+                                    Color(0xFF1E40AF)
+                                )
+                            )
+                        )
+                        .clickable { onOpenDetail() }
                         .padding(horizontal = 12.dp, vertical = 6.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "Kelola",
                         style = MaterialTheme.typography.labelMedium,
-                        color = colorScheme.onPrimary
+                        color = Color.White
                     )
                 }
             }
@@ -229,7 +253,7 @@ fun QrInviteDialog(
             Card(
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = colorScheme.surface
+                    containerColor = Color(0xFF1E40AF)
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -251,13 +275,14 @@ fun QrInviteDialog(
                                 text = "QR Undangan Panitia",
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.SemiBold
-                                )
+                                ),
+                                color = Color.White
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = event.title,
                                 style = MaterialTheme.typography.bodySmall,
-                                color = colorScheme.onSurface.copy(alpha = 0.75f),
+                                color = Color.White,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -266,7 +291,7 @@ fun QrInviteDialog(
                         Text(
                             text = "Tutup",
                             style = MaterialTheme.typography.labelMedium,
-                            color = colorScheme.primary,
+                            color = Color.White,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(999.dp))
                                 .clickable { onDismiss() }
@@ -321,9 +346,13 @@ fun QrInviteDialog(
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Medium
                         ),
-                        color = colorScheme.onSurfaceVariant,
+                        color = Color.White,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = Color(0xFF1E40AF)
+                            )
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))

@@ -3,10 +3,7 @@ package com.example.projectakhirpamterapan.ui.peserta.kelolaevent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,16 +11,46 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Campaign
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -32,13 +59,14 @@ import androidx.compose.ui.unit.sp
 import com.example.projectakhirpamterapan.model.EventAnnouncement
 import java.text.SimpleDateFormat
 import java.util.Locale
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PesertaKelolaEventScreen(
     vm: PesertaKelolaEventViewModel,
     eventTitle: String,
-    // Dummy data params (replace with real data from VM/NavArgs)
     eventLocation: String = "Lokasi Belum Diatur",
     eventDate: String = "2025-01-01",
     eventTime: String = "08:00:00",
@@ -46,9 +74,6 @@ fun PesertaKelolaEventScreen(
     onBack: () -> Unit
 ) {
     val uiState by vm.uiState.collectAsState()
-    val colorScheme = MaterialTheme.colorScheme
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-
     val snackbarHostState = remember { SnackbarHostState() }
     var snackMessage by remember { mutableStateOf<String?>(null) }
 
@@ -60,54 +85,47 @@ fun PesertaKelolaEventScreen(
     }
 
     Scaffold(
-        containerColor = colorScheme.background,
+        containerColor = Color.White,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            LargeTopAppBar(
+            CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.White
+                ),
                 title = {
                     Text(
                         text = "Detail Event",
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color(0xFF1E40AF),
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.SemiBold
+                        )
                     )
                 },
                 navigationIcon = {
-                    IconButton(
-                        onClick = onBack,
-                        colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = colorScheme.surface.copy(alpha = 0.6f)
-                        )
-                    ) {
+                    IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Kembali"
+                            contentDescription = "Kembali",
+                            tint = Color(0xFF1E40AF)
                         )
                     }
                 },
                 actions = {
-                    FilledIconButton(
-                        onClick = { vm.refresh() },
-                        colors = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = colorScheme.primaryContainer,
-                            contentColor = colorScheme.onPrimaryContainer
-                        )
-                    ) {
+                    IconButton(onClick = { vm.refresh() }) {
                         Icon(
                             imageVector = Icons.Filled.Refresh,
-                            contentDescription = "Refresh"
+                            contentDescription = "Refresh",
+                            tint = Color(0xFF1E40AF)
                         )
                     }
-                },
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.largeTopAppBarColors(
-                    containerColor = colorScheme.surface,
-                    scrolledContainerColor = colorScheme.surface
-                )
+                }
             )
         }
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Color.White)
                 .padding(paddingValues)
         ) {
             if (uiState.isLoading) {
@@ -117,8 +135,8 @@ fun PesertaKelolaEventScreen(
                 ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(48.dp),
-                        color = colorScheme.primary,
-                        strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
+                        color = Color(0xFF1E40AF),
+                        strokeCap = StrokeCap.Round
                     )
                 }
             } else {
@@ -164,12 +182,13 @@ fun PesertaKelolaEventScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(4.dp, 24.dp)
-                                    .background(colorScheme.primary, CircleShape)
+                                    .size(width = 4.dp, height = 24.dp)
+                                    .background(Color(0xFF1E40AF), CircleShape)
                             )
                             Text(
                                 text = "Papan Pengumuman",
@@ -177,13 +196,13 @@ fun PesertaKelolaEventScreen(
                                     fontWeight = FontWeight.ExtraBold,
                                     letterSpacing = (-0.5).sp
                                 ),
-                                color = colorScheme.onSurface
+                                color = Color.Black
                             )
                             Spacer(modifier = Modifier.weight(1f))
                             Icon(
                                 imageVector = Icons.Filled.Notifications,
                                 contentDescription = null,
-                                tint = colorScheme.primary.copy(alpha = 0.7f)
+                                tint = Color(0xFF1E40AF).copy(alpha = 0.8f)
                             )
                         }
                     }
@@ -206,7 +225,7 @@ fun PesertaKelolaEventScreen(
 }
 
 /* =====================================================
- *  PREMIUM UI COMPONENTS
+ *  LIGHT THEME COMPONENTS
  * ===================================================== */
 
 @Composable
@@ -217,9 +236,6 @@ private fun EventInfoCard(
     time: String,
     status: String
 ) {
-    val colorScheme = MaterialTheme.colorScheme
-    val isDark = isSystemInDarkTheme()
-
     // Format Indonesian Date
     val formattedDate = remember(date) {
         try {
@@ -242,26 +258,18 @@ private fun EventInfoCard(
         }
     }
 
-    // Adaptive Status Colors (Dark Mode Support)
-    val (statusColor, statusBg) = when(status) {
-        "Berlangsung" -> {
-            if (isDark) Color(0xFF4ADE80) to Color(0xFF14532D) // Green Light / Dark Green
-            else Color(0xFF16A34A) to Color(0xFFDCFCE7) // Green / Light Green
-        }
-        "Selesai" -> {
-            if (isDark) Color(0xFF94A3B8) to Color(0xFF1E293B) // Slate Light / Dark Slate
-            else Color(0xFF475569) to Color(0xFFF1F5F9)
-        }
-        else -> {
-            if (isDark) Color(0xFF60A5FA) to Color(0xFF1E3A8A) // Blue Light / Dark Blue
-            else Color(0xFF2563EB) to Color(0xFFDBEAFE)
-        }
+    val (statusColor, statusBg) = when (status) {
+        "Berlangsung" -> Color(0xFF16A34A) to Color(0xFFDCFCE7)
+        "Selesai" -> Color(0xFF475569) to Color(0xFFF1F5F9)
+        else -> Color(0xFF2563EB) to Color(0xFFDBEAFE)
     }
 
     Card(
         shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
@@ -279,7 +287,7 @@ private fun EventInfoCard(
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
                     ),
-                    color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = Color(0xFF94A3B8)
                 )
 
                 Surface(
@@ -297,38 +305,36 @@ private fun EventInfoCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 1. Event Name
+            // Event Name
             Text(
                 text = title,
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.Bold,
                     lineHeight = 32.sp
                 ),
-                color = colorScheme.onSurface
+                color = Color.Black
             )
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            HorizontalDivider(color = colorScheme.outlineVariant.copy(alpha = 0.3f))
+            HorizontalDivider(color = Color(0xFFE2E8F0))
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // 2. Location
+            // Location
             InfoRowItem(
                 icon = Icons.Filled.LocationOn,
                 title = "Lokasi",
-                value = location,
-                colorScheme = colorScheme
+                value = location
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 3. Date & Time
+            // Date & Time
             InfoRowItem(
                 icon = Icons.Filled.CalendarToday,
                 title = "Tanggal & Waktu",
-                value = "$formattedDate\nPukul $formattedTime",
-                colorScheme = colorScheme
+                value = "$formattedDate\nPukul $formattedTime"
             )
         }
     }
@@ -338,20 +344,19 @@ private fun EventInfoCard(
 private fun InfoRowItem(
     icon: ImageVector,
     title: String,
-    value: String,
-    colorScheme: ColorScheme
+    value: String
 ) {
     Row(verticalAlignment = Alignment.Top) {
         Box(
             modifier = Modifier
                 .size(40.dp)
-                .background(colorScheme.surfaceContainerHigh.copy(alpha = 0.5f), CircleShape),
+                .background(Color(0xFFE0F2FE), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = colorScheme.primary,
+                tint = Color(0xFF1E40AF),
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -362,13 +367,13 @@ private fun InfoRowItem(
             Text(
                 text = title,
                 style = MaterialTheme.typography.labelMedium,
-                color = colorScheme.onSurfaceVariant
+                color = Color(0xFF64748B)
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-                color = colorScheme.onSurface
+                color = Color.Black
             )
         }
     }
@@ -381,65 +386,58 @@ private fun AttendanceCardPremium(
     isCheckingIn: Boolean,
     onCheckInClick: () -> Unit
 ) {
-    val colorScheme = MaterialTheme.colorScheme
-    val isDark = isSystemInDarkTheme()
     val isPresent = status != null
 
-    // Adaptive Gradient & Colors
+    val formattedCheckIn = remember(checkedInAt) {
+        checkedInAt?.let { formatDateTimeIndonesian(it) } ?: "-"
+    }
+
     val bgGradient = if (isPresent) {
-        // If Present: Green Theme
-        if (isDark) {
-            Brush.verticalGradient(
-                colors = listOf(
-                    Color(0xFF052e16), // Very dark green
-                    colorScheme.surface
-                )
-            )
-        } else {
-            Brush.verticalGradient(
-                colors = listOf(
-                    Color(0xFFDCFCE7), // Light Green
-                    Color.White
-                )
-            )
-        }
-    } else {
-        // If Not Present: Neutral Theme
         Brush.verticalGradient(
             colors = listOf(
-                colorScheme.primaryContainer.copy(alpha = 0.2f),
-                colorScheme.surface
+                Color(0xFFDCFCE7),
+                Color.White
+            )
+        )
+    } else {
+        Brush.verticalGradient(
+            colors = listOf(
+                Color(0xFFE0F2FE),
+                Color.White
             )
         )
     }
 
     val borderColor = if (isPresent) {
-        if (isDark) Color(0xFF22C55E).copy(alpha = 0.5f) else Color(0xFF22C55E).copy(alpha = 0.3f)
+        Color(0xFF22C55E).copy(alpha = 0.3f)
     } else {
-        colorScheme.outlineVariant.copy(alpha = 0.4f)
+        Color(0xFFBFDBFE)
     }
 
     val accentColor = if (isPresent) {
-        if (isDark) Color(0xFF4ADE80) else Color(0xFF16A34A)
+        Color(0xFF16A34A)
     } else {
-        colorScheme.primary
+        Color(0xFF1E40AF)
     }
 
     val labelColor = if (isPresent) {
-        if (isDark) Color(0xFF86EFAC) else Color(0xFF15803D)
+        Color(0xFF15803D)
     } else {
-        colorScheme.primary
+        Color(0xFF1E40AF)
     }
 
     Card(
-        shape = RoundedCornerShape(28.dp),
+        shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         border = BorderStroke(1.dp, borderColor),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        ),
         modifier = Modifier.fillMaxWidth()
     ) {
         Box(modifier = Modifier.background(bgGradient)) {
             Column(
-                modifier = Modifier.padding(24.dp)
+                modifier = Modifier.padding(20.dp)
             ) {
                 // Header Card
                 Row(
@@ -458,7 +456,10 @@ private fun AttendanceCardPremium(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        AnimatedVisibility(visible = true, enter = fadeIn() + slideInVertically()) {
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = fadeIn() + slideInVertically()
+                        ) {
                             Text(
                                 text = if (isPresent) "Sudah Hadir" else "Belum Absen",
                                 style = MaterialTheme.typography.headlineSmall.copy(
@@ -469,21 +470,16 @@ private fun AttendanceCardPremium(
                         }
                     }
 
-                    // Status Badge Icon
                     Surface(
                         shape = CircleShape,
-                        color = if (isPresent) accentColor else colorScheme.surfaceContainerHighest,
+                        color = accentColor,
                         modifier = Modifier.size(48.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = if (isPresent) Icons.Filled.Check else Icons.Filled.QrCodeScanner,
                                 contentDescription = null,
-                                tint = if (isPresent) {
-                                    if (isDark) Color.Black else Color.White
-                                } else {
-                                    colorScheme.onSurfaceVariant
-                                },
+                                tint = Color.White,
                                 modifier = Modifier.size(24.dp)
                             )
                         }
@@ -492,36 +488,35 @@ private fun AttendanceCardPremium(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Content Area
                 if (isPresent) {
                     AttendanceDetailRow(
                         icon = Icons.Filled.AccessTime,
                         label = "Waktu Check-in",
-                        value = checkedInAt ?: "-",
-                        isDark = isDark // Pass dark mode param
+                        value = formattedCheckIn,
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Secondary Button for Update
                     OutlinedButton(
                         onClick = onCheckInClick,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, colorScheme.outlineVariant)
+                        border = BorderStroke(1.dp, Color(0xFFE2E8F0))
                     ) {
                         if (isCheckingIn) {
-                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp
+                            )
                         } else {
-                            Text("Update Data", color = colorScheme.onSurface)
+                            Text("Update Data", color = Color.Black)
                         }
                     }
                 } else {
-                    // CTA Area for Check-in
                     Text(
                         text = "Silahkan melakukan absensi yang disediakan panitia untuk mencatat kehadiranmu.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = colorScheme.onSurfaceVariant
+                        color = Color(0xFF64748B)
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -533,8 +528,8 @@ private fun AttendanceCardPremium(
                             .height(54.dp),
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = colorScheme.primary,
-                            contentColor = colorScheme.onPrimary
+                            containerColor = Color(0xFF1E40AF),
+                            contentColor = Color.White
                         ),
                         elevation = ButtonDefaults.buttonElevation(
                             defaultElevation = 4.dp,
@@ -544,17 +539,23 @@ private fun AttendanceCardPremium(
                         if (isCheckingIn) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(20.dp),
-                                color = colorScheme.onPrimary,
+                                color = Color.White,
                                 strokeWidth = 2.5.dp
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text("Memproses...")
                         } else {
-                            Icon(Icons.Filled.QrCodeScanner, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Icon(
+                                Icons.Filled.QrCodeScanner,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 "Check-in Sekarang",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold
+                                )
                             )
                         }
                     }
@@ -569,14 +570,12 @@ fun AttendanceDetailRow(
     icon: ImageVector,
     label: String,
     value: String,
-    isDark: Boolean
 ) {
-    // Adaptive Colors for Detail Row
-    val bgColor = if (isDark) Color(0xFF064E3B).copy(alpha = 0.5f) else Color.White.copy(alpha = 0.6f)
-    val borderColor = if (isDark) Color(0xFF059669).copy(alpha = 0.4f) else Color(0xFF22C55E).copy(alpha = 0.2f)
-    val iconTint = if (isDark) Color(0xFF4ADE80) else Color(0xFF15803D)
-    val labelColor = if (isDark) Color(0xFF86EFAC) else Color(0xFF15803D).copy(alpha = 0.8f)
-    val valueColor = if (isDark) Color(0xFFD1FAE5) else Color(0xFF14532D)
+    val bgColor = Color(0xFFF0FDF4)
+    val borderColor = Color(0xFF22C55E).copy(alpha = 0.3f)
+    val iconTint = Color(0xFF16A34A)
+    val labelColor = Color(0xFF15803D)
+    val valueColor = Color(0xFF14532D)
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -612,12 +611,16 @@ fun AttendanceDetailRow(
 private fun AnnouncementItemPremium(
     announcement: EventAnnouncement
 ) {
-    val colorScheme = MaterialTheme.colorScheme
+    val formattedCreatedAt = remember(announcement.created_at) {
+        formatDateTimeIndonesian(announcement.created_at)
+    }
 
     Card(
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
@@ -625,18 +628,17 @@ private fun AnnouncementItemPremium(
         ) {
             // Header: Avatar & Meta
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Avatar Initials
                 val initial = announcement.created_by_name.firstOrNull()?.toString() ?: "A"
                 Surface(
                     shape = CircleShape,
-                    color = colorScheme.tertiaryContainer,
+                    color = Color(0xFFE0F2FE),
                     modifier = Modifier.size(40.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(
                             text = initial,
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = colorScheme.onTertiaryContainer
+                            color = Color(0xFF1E40AF)
                         )
                     }
                 }
@@ -647,12 +649,12 @@ private fun AnnouncementItemPremium(
                     Text(
                         text = announcement.created_by_name,
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                        color = colorScheme.onSurface
+                        color = Color.Black
                     )
                     Text(
-                        text = announcement.created_at,
+                        text = formattedCreatedAt,
                         style = MaterialTheme.typography.labelSmall,
-                        color = colorScheme.onSurfaceVariant
+                        color = Color(0xFF64748B)
                     )
                 }
             }
@@ -663,13 +665,13 @@ private fun AnnouncementItemPremium(
             Text(
                 text = announcement.title,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = colorScheme.onSurface
+                color = Color.Black
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = announcement.body,
                 style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
-                color = colorScheme.onSurface.copy(alpha = 0.8f)
+                color = Color(0xFF0F172A)
             )
         }
     }
@@ -714,13 +716,16 @@ private fun EmptyAnnouncementStatePremium() {
         Box(
             modifier = Modifier
                 .size(80.dp)
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape),
+                .background(
+                    Color(0xFFF1F5F9),
+                    CircleShape
+                ),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Filled.Campaign,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                tint = Color(0xFF94A3B8),
                 modifier = Modifier.size(40.dp)
             )
         }
@@ -728,13 +733,40 @@ private fun EmptyAnnouncementStatePremium() {
         Text(
             text = "Belum Ada Pengumuman",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = Color(0xFF475569)
         )
         Text(
             text = "Informasi penting dari panitia akan muncul di sini.",
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            color = Color(0xFF94A3B8),
             textAlign = TextAlign.Center
         )
     }
+}
+
+/**
+ * Helper: format string tanggal dari backend ke format Indonesia
+ * Contoh output: "Rabu, 19 November 2025 • 13.45 WIB"
+ */
+private fun formatDateTimeIndonesian(raw: String): String {
+    val localeId = Locale("id", "ID")
+    val patterns = listOf(
+        "yyyy-MM-dd HH:mm:ss",
+        "yyyy-MM-dd'T'HH:mm:ss.SSSX",
+        "yyyy-MM-dd'T'HH:mm:ssX",
+        "yyyy-MM-dd'T'HH:mm:ss"
+    )
+
+    val date = patterns
+        .asSequence()
+        .mapNotNull { pattern ->
+            try {
+                SimpleDateFormat(pattern, Locale.getDefault()).parse(raw)
+            } catch (_: Exception) {
+                null
+            }
+        }
+        .firstOrNull() ?: return raw
+
+    return SimpleDateFormat("EEEE, dd MMMM yyyy • HH.mm 'WIB'", localeId).format(date)
 }

@@ -48,29 +48,19 @@ fun PesertaEventCard(
     // 2. Background Card Logic (Kunci Perbaikan)
     // Di Dark Mode: Kita pakai Surface Container (abu gelap) sebagai dasar,
     // lalu ditumpuk gradient halus biar tidak flat.
-    val cardContainerColor = if (isDark) {
-        MaterialTheme.colorScheme.surfaceContainerLow // Sedikit lebih terang dari background hitam pekat
-    } else {
-        MaterialTheme.colorScheme.surface
-    }
+    val cardContainerColor = if (isDark) colorScheme.surfaceContainerLow else colorScheme.surface
 
     val backgroundBrush = if (isDark) {
-        Brush.linearGradient(
+        Brush.verticalGradient(
             colors = listOf(
-                Color.White.copy(alpha = 0.05f), // Highlight kiri atas
-                Color.White.copy(alpha = 0.00f)  // Fade ke kanan bawah
+                colorScheme.surfaceContainerLow,
+                colorScheme.surfaceContainerLow.copy(alpha = 0.8f)
             )
         )
-    } else {
-        null
-    }
+    } else null
 
     // 3. Border yang lebih terlihat di Dark Mode
-    val borderStroke = if (isDark) {
-        BorderStroke(1.dp, Color.White.copy(alpha = 0.12f))
-    } else {
-        BorderStroke(1.dp, colorScheme.outlineVariant.copy(alpha = 0.4f))
-    }
+    val borderStroke = if (isDark) BorderStroke(1.dp, Color.White.copy(alpha = 0.12f)) else BorderStroke(1.dp, colorScheme.outlineVariant.copy(alpha = 0.4f))
 
     // 4. Shadow Effect
     val shadowElevation = if (isDark) 0.dp else 8.dp
@@ -81,16 +71,16 @@ fun PesertaEventCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp, horizontal = 4.dp)
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(10.dp))
             .clickable { onManageClick?.invoke() },
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(
-            containerColor = cardContainerColor,
+            containerColor = Color.White,
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = shadowElevation
         ),
-        border = borderStroke
+        border = BorderStroke(1.dp, Color(0xFF1E40AF))
     ) {
         Box(
             modifier = Modifier
@@ -111,9 +101,19 @@ fun PesertaEventCard(
                 ) {
                     // Date Capsule
                     Surface(
-                        color = if (isDark) Color.White.copy(alpha = 0.08f) else colorScheme.surfaceContainerHighest,
+                        color = Color.Transparent,
                         shape = RoundedCornerShape(50),
-                        modifier = Modifier.height(32.dp),
+                        modifier = Modifier
+                            .height(32.dp)
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        Color(0xFF1E40AF),
+                                        Color(0xFF0D1B49)
+                                    )
+                                ),
+                                shape = RoundedCornerShape(50)
+                            ),
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -164,7 +164,7 @@ fun PesertaEventCard(
                         // Sedikit lebih renggang biar elegan
                         letterSpacing = (-0.5).sp
                     ),
-                    color = if (isDark) Color.White else colorScheme.onSurface,
+                    color = if (isDark) Color.White else Color(0xFF1E40AF),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -178,7 +178,7 @@ fun PesertaEventCard(
                 ) {
                     InfoItem(
                         icon = Icons.Default.AccessTime,
-                        text = "${event.timeFormatted ?: "-"} ",
+                        text = "${event.timeFormatted ?: "-"} WIB",
                         isDark = isDark,
                         colorScheme = colorScheme
                     )
@@ -249,12 +249,12 @@ fun PesertaEventCard(
                             Text(
                                 text = "Total Peserta",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = if (isDark) Color.White.copy(alpha = 0.5f) else colorScheme.onSurfaceVariant
+                                color = Color(0xFF1E40AF)
                             )
                             Text(
                                 text = "${event.participants}",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = if (isDark) Color.White else colorScheme.onSurface
+                                color = Color(0xFF1E40AF)
                             )
                         }
                     }
@@ -262,9 +262,9 @@ fun PesertaEventCard(
                     // Button Action
                     Surface(
                         onClick = { onManageClick?.invoke() },
-                        shape = RoundedCornerShape(12.dp), // Squircle button
-                        color = colorScheme.primary,
-                        contentColor = colorScheme.onPrimary,
+                        shape = RoundedCornerShape(10.dp), // Squircle button
+                        color = Color.White,
+                        contentColor = Color(0xFF1E40AF),
                         modifier = Modifier.height(40.dp)
                     ) {
                         Row(
@@ -273,12 +273,14 @@ fun PesertaEventCard(
                         ) {
                             Text(
                                 text = "Detail",
-                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                                color = Color(0xFF1E40AF)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                                 contentDescription = null,
+                                tint = Color(0xFF1E40AF),
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -304,14 +306,14 @@ private fun InfoItem(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = if (isDark) Color.White.copy(alpha = 0.7f) else colorScheme.onSurfaceVariant,
+            tint = Color(0xFF1E40AF),
             modifier = Modifier.size(16.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            color = if (isDark) Color.White.copy(alpha = 0.7f) else colorScheme.onSurfaceVariant,
+            color = Color(0xFF1E40AF),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
