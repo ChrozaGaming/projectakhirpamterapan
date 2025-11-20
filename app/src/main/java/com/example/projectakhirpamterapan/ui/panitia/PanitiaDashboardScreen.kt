@@ -1,25 +1,20 @@
 package com.example.projectakhirpamterapan.ui.panitia
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import com.example.projectakhirpamterapan.ui.panitia.components.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,7 +22,8 @@ import com.example.projectakhirpamterapan.ui.panitia.components.*
 fun PanitiaDashboardScreen(
     vm: PanitiaDashboardViewModel,
     userName: String? = null,
-    onCreateEvent: () -> Unit = {}
+    onCreateEvent: () -> Unit = {},
+    onBackToRole: () -> Unit = {}
 ) {
     val uiState by vm.uiState.collectAsState()
     val colorScheme = MaterialTheme.colorScheme
@@ -38,16 +34,28 @@ fun PanitiaDashboardScreen(
     // state dialog QR
     var selectedEventForQr by remember { mutableStateOf<EventUiModel?>(null) }
 
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White),
                 title = {
                     Text(
                         text = "Dashboard Panitia",
+                        color = Color(0xFF1E40AF),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
                         )
                     )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackToRole) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Kembali",
+                            tint = Color(0xFF1E40AF)
+                        )
+                    }
                 }
             )
         },
@@ -63,12 +71,12 @@ fun PanitiaDashboardScreen(
                 )
             }
         },
-        containerColor = colorScheme.background
+        containerColor = Color.White
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(colorScheme.background)
+                .background(Color.White)
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
@@ -105,13 +113,13 @@ fun PanitiaDashboardScreen(
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
                 ),
-                color = colorScheme.onBackground,
+                color = Color.Black,
                 modifier = Modifier.padding(bottom = 4.dp)
             )
             Text(
                 text = "Scroll ke bawah untuk melihat semua event yang kamu pegang.",
                 style = MaterialTheme.typography.bodySmall,
-                color = colorScheme.onBackground.copy(alpha = 0.7f)
+                color = Color.Black
             )
 
             Spacer(modifier = Modifier.height(8.dp))
