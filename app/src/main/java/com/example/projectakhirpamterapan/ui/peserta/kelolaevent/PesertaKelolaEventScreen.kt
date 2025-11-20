@@ -3,10 +3,7 @@ package com.example.projectakhirpamterapan.ui.peserta.kelolaevent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,20 +20,15 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -46,6 +38,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -66,6 +59,8 @@ import androidx.compose.ui.unit.sp
 import com.example.projectakhirpamterapan.model.EventAnnouncement
 import java.text.SimpleDateFormat
 import java.util.Locale
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,10 +74,6 @@ fun PesertaKelolaEventScreen(
     onBack: () -> Unit
 ) {
     val uiState by vm.uiState.collectAsState()
-    val colorScheme = MaterialTheme.colorScheme
-    val isDark = isSystemInDarkTheme()
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-
     val snackbarHostState = remember { SnackbarHostState() }
     var snackMessage by remember { mutableStateOf<String?>(null) }
 
@@ -94,70 +85,47 @@ fun PesertaKelolaEventScreen(
     }
 
     Scaffold(
-        containerColor = if (isDark) colorScheme.surface else colorScheme.background,
+        containerColor = Color.White,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            LargeTopAppBar(
+            CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.White
+                ),
                 title = {
                     Text(
                         text = "Detail Event",
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color(0xFF1E40AF),
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.SemiBold
+                        )
                     )
                 },
                 navigationIcon = {
-                    IconButton(
-                        onClick = onBack,
-                        colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = colorScheme.surfaceVariant.copy(alpha = 0.7f)
-                        )
-                    ) {
+                    IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Kembali"
+                            contentDescription = "Kembali",
+                            tint = Color(0xFF1E40AF)
                         )
                     }
                 },
                 actions = {
-                    FilledIconButton(
-                        onClick = { vm.refresh() },
-                        colors = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = colorScheme.primaryContainer,
-                            contentColor = colorScheme.onPrimaryContainer
-                        )
-                    ) {
+                    IconButton(onClick = { vm.refresh() }) {
                         Icon(
                             imageVector = Icons.Filled.Refresh,
-                            contentDescription = "Refresh"
+                            contentDescription = "Refresh",
+                            tint = Color(0xFF1E40AF)
                         )
                     }
-                },
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.largeTopAppBarColors(
-                    containerColor = if (isDark) colorScheme.surfaceVariant else colorScheme.surface,
-                    scrolledContainerColor = if (isDark) colorScheme.surfaceVariant else colorScheme.surface
-                )
+                }
             )
         }
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    if (isDark)
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                colorScheme.surface,
-                                colorScheme.surfaceVariant
-                            )
-                        )
-                    else
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                colorScheme.background,
-                                colorScheme.surface
-                            )
-                        )
-                )
+                .background(Color.White)
                 .padding(paddingValues)
         ) {
             if (uiState.isLoading) {
@@ -167,7 +135,7 @@ fun PesertaKelolaEventScreen(
                 ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(48.dp),
-                        color = colorScheme.primary,
+                        color = Color(0xFF1E40AF),
                         strokeCap = StrokeCap.Round
                     )
                 }
@@ -214,12 +182,13 @@ fun PesertaKelolaEventScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Box(
                                 modifier = Modifier
                                     .size(width = 4.dp, height = 24.dp)
-                                    .background(colorScheme.primary, CircleShape)
+                                    .background(Color(0xFF1E40AF), CircleShape)
                             )
                             Text(
                                 text = "Papan Pengumuman",
@@ -227,13 +196,13 @@ fun PesertaKelolaEventScreen(
                                     fontWeight = FontWeight.ExtraBold,
                                     letterSpacing = (-0.5).sp
                                 ),
-                                color = colorScheme.onSurface
+                                color = Color.Black
                             )
                             Spacer(modifier = Modifier.weight(1f))
                             Icon(
                                 imageVector = Icons.Filled.Notifications,
                                 contentDescription = null,
-                                tint = colorScheme.primary.copy(alpha = 0.8f)
+                                tint = Color(0xFF1E40AF).copy(alpha = 0.8f)
                             )
                         }
                     }
@@ -256,7 +225,7 @@ fun PesertaKelolaEventScreen(
 }
 
 /* =====================================================
- *  PREMIUM UI COMPONENTS (FULL DARK-MODE FRIENDLY)
+ *  LIGHT THEME COMPONENTS
  * ===================================================== */
 
 @Composable
@@ -267,9 +236,6 @@ private fun EventInfoCard(
     time: String,
     status: String
 ) {
-    val colorScheme = MaterialTheme.colorScheme
-    val isDark = isSystemInDarkTheme()
-
     // Format Indonesian Date
     val formattedDate = remember(date) {
         try {
@@ -292,30 +258,17 @@ private fun EventInfoCard(
         }
     }
 
-    // Adaptive Status Colors (Dark Mode Support)
     val (statusColor, statusBg) = when (status) {
-        "Berlangsung" -> {
-            if (isDark) Color(0xFF4ADE80) to Color(0xFF14532D)
-            else Color(0xFF16A34A) to Color(0xFFDCFCE7)
-        }
-        "Selesai" -> {
-            if (isDark) Color(0xFF94A3B8) to Color(0xFF1E293B)
-            else Color(0xFF475569) to Color(0xFFF1F5F9)
-        }
-        else -> {
-            if (isDark) Color(0xFF60A5FA) to Color(0xFF1E3A8A)
-            else Color(0xFF2563EB) to Color(0xFFDBEAFE)
-        }
+        "Berlangsung" -> Color(0xFF16A34A) to Color(0xFFDCFCE7)
+        "Selesai" -> Color(0xFF475569) to Color(0xFFF1F5F9)
+        else -> Color(0xFF2563EB) to Color(0xFFDBEAFE)
     }
 
     Card(
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isDark)
-                colorScheme.surfaceVariant.copy(alpha = 0.9f)
-            else
-                colorScheme.surface
+            containerColor = Color.White
         ),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -334,7 +287,7 @@ private fun EventInfoCard(
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
                     ),
-                    color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = Color(0xFF94A3B8)
                 )
 
                 Surface(
@@ -359,12 +312,12 @@ private fun EventInfoCard(
                     fontWeight = FontWeight.Bold,
                     lineHeight = 32.sp
                 ),
-                color = colorScheme.onSurface
+                color = Color.Black
             )
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            HorizontalDivider(color = colorScheme.outlineVariant.copy(alpha = 0.3f))
+            HorizontalDivider(color = Color(0xFFE2E8F0))
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -372,8 +325,7 @@ private fun EventInfoCard(
             InfoRowItem(
                 icon = Icons.Filled.LocationOn,
                 title = "Lokasi",
-                value = location,
-                colorScheme = colorScheme
+                value = location
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -382,8 +334,7 @@ private fun EventInfoCard(
             InfoRowItem(
                 icon = Icons.Filled.CalendarToday,
                 title = "Tanggal & Waktu",
-                value = "$formattedDate\nPukul $formattedTime",
-                colorScheme = colorScheme
+                value = "$formattedDate\nPukul $formattedTime"
             )
         }
     }
@@ -393,20 +344,19 @@ private fun EventInfoCard(
 private fun InfoRowItem(
     icon: ImageVector,
     title: String,
-    value: String,
-    colorScheme: ColorScheme
+    value: String
 ) {
     Row(verticalAlignment = Alignment.Top) {
         Box(
             modifier = Modifier
                 .size(40.dp)
-                .background(colorScheme.surfaceVariant.copy(alpha = 0.6f), CircleShape),
+                .background(Color(0xFFE0F2FE), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = colorScheme.primary,
+                tint = Color(0xFF1E40AF),
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -417,13 +367,13 @@ private fun InfoRowItem(
             Text(
                 text = title,
                 style = MaterialTheme.typography.labelMedium,
-                color = colorScheme.onSurfaceVariant
+                color = Color(0xFF64748B)
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-                color = colorScheme.onSurface
+                color = Color.Black
             )
         }
     }
@@ -436,61 +386,48 @@ private fun AttendanceCardPremium(
     isCheckingIn: Boolean,
     onCheckInClick: () -> Unit
 ) {
-    val colorScheme = MaterialTheme.colorScheme
-    val isDark = isSystemInDarkTheme()
     val isPresent = status != null
 
-    // Format check-in time to Indonesian date & time if available
     val formattedCheckIn = remember(checkedInAt) {
         checkedInAt?.let { formatDateTimeIndonesian(it) } ?: "-"
     }
 
-    // Adaptive Gradient & Colors
     val bgGradient = if (isPresent) {
-        if (isDark) {
-            Brush.verticalGradient(
-                colors = listOf(
-                    Color(0xFF052E16),
-                    colorScheme.surface
-                )
+        Brush.verticalGradient(
+            colors = listOf(
+                Color(0xFFDCFCE7),
+                Color.White
             )
-        } else {
-            Brush.verticalGradient(
-                colors = listOf(
-                    Color(0xFFDCFCE7),
-                    Color.White
-                )
-            )
-        }
+        )
     } else {
         Brush.verticalGradient(
             colors = listOf(
-                colorScheme.primaryContainer.copy(alpha = 0.2f),
-                colorScheme.surface
+                Color(0xFFE0F2FE),
+                Color.White
             )
         )
     }
 
     val borderColor = if (isPresent) {
-        if (isDark) Color(0xFF22C55E).copy(alpha = 0.5f) else Color(0xFF22C55E).copy(alpha = 0.3f)
+        Color(0xFF22C55E).copy(alpha = 0.3f)
     } else {
-        colorScheme.outlineVariant.copy(alpha = 0.4f)
+        Color(0xFFBFDBFE)
     }
 
     val accentColor = if (isPresent) {
-        if (isDark) Color(0xFF4ADE80) else Color(0xFF16A34A)
+        Color(0xFF16A34A)
     } else {
-        colorScheme.primary
+        Color(0xFF1E40AF)
     }
 
     val labelColor = if (isPresent) {
-        if (isDark) Color(0xFF86EFAC) else Color(0xFF15803D)
+        Color(0xFF15803D)
     } else {
-        colorScheme.primary
+        Color(0xFF1E40AF)
     }
 
     Card(
-        shape = RoundedCornerShape(28.dp),
+        shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         border = BorderStroke(1.dp, borderColor),
         colors = CardDefaults.cardColors(
@@ -500,7 +437,7 @@ private fun AttendanceCardPremium(
     ) {
         Box(modifier = Modifier.background(bgGradient)) {
             Column(
-                modifier = Modifier.padding(24.dp)
+                modifier = Modifier.padding(20.dp)
             ) {
                 // Header Card
                 Row(
@@ -533,21 +470,16 @@ private fun AttendanceCardPremium(
                         }
                     }
 
-                    // Status Badge Icon
                     Surface(
                         shape = CircleShape,
-                        color = if (isPresent) accentColor else colorScheme.surfaceVariant,
+                        color = accentColor,
                         modifier = Modifier.size(48.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = if (isPresent) Icons.Filled.Check else Icons.Filled.QrCodeScanner,
                                 contentDescription = null,
-                                tint = if (isPresent) {
-                                    if (isDark) Color.Black else Color.White
-                                } else {
-                                    colorScheme.onSurfaceVariant
-                                },
+                                tint = Color.White,
                                 modifier = Modifier.size(24.dp)
                             )
                         }
@@ -557,7 +489,6 @@ private fun AttendanceCardPremium(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 if (isPresent) {
-                    // Detail waktu check-in (format Indonesia)
                     AttendanceDetailRow(
                         icon = Icons.Filled.AccessTime,
                         label = "Waktu Check-in",
@@ -570,7 +501,7 @@ private fun AttendanceCardPremium(
                         onClick = onCheckInClick,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, colorScheme.outlineVariant)
+                        border = BorderStroke(1.dp, Color(0xFFE2E8F0))
                     ) {
                         if (isCheckingIn) {
                             CircularProgressIndicator(
@@ -578,14 +509,14 @@ private fun AttendanceCardPremium(
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Text("Update Data", color = colorScheme.onSurface)
+                            Text("Update Data", color = Color.Black)
                         }
                     }
                 } else {
                     Text(
                         text = "Silahkan melakukan absensi yang disediakan panitia untuk mencatat kehadiranmu.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = colorScheme.onSurfaceVariant
+                        color = Color(0xFF64748B)
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -597,8 +528,8 @@ private fun AttendanceCardPremium(
                             .height(54.dp),
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = colorScheme.primary,
-                            contentColor = colorScheme.onPrimary
+                            containerColor = Color(0xFF1E40AF),
+                            contentColor = Color.White
                         ),
                         elevation = ButtonDefaults.buttonElevation(
                             defaultElevation = 4.dp,
@@ -608,7 +539,7 @@ private fun AttendanceCardPremium(
                         if (isCheckingIn) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(20.dp),
-                                color = colorScheme.onPrimary,
+                                color = Color.White,
                                 strokeWidth = 2.5.dp
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -640,12 +571,11 @@ fun AttendanceDetailRow(
     label: String,
     value: String,
 ) {
-    val isDark = isSystemInDarkTheme()
-    val bgColor = if (isDark) Color(0xFF064E3B).copy(alpha = 0.6f) else Color.White.copy(alpha = 0.85f)
-    val borderColor = if (isDark) Color(0xFF059669).copy(alpha = 0.4f) else Color(0xFF22C55E).copy(alpha = 0.25f)
-    val iconTint = if (isDark) Color(0xFF4ADE80) else Color(0xFF15803D)
-    val labelColor = if (isDark) Color(0xFFBBF7D0) else Color(0xFF15803D).copy(alpha = 0.85f)
-    val valueColor = if (isDark) Color(0xFFD1FAE5) else Color(0xFF14532D)
+    val bgColor = Color(0xFFF0FDF4)
+    val borderColor = Color(0xFF22C55E).copy(alpha = 0.3f)
+    val iconTint = Color(0xFF16A34A)
+    val labelColor = Color(0xFF15803D)
+    val valueColor = Color(0xFF14532D)
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -681,10 +611,6 @@ fun AttendanceDetailRow(
 private fun AnnouncementItemPremium(
     announcement: EventAnnouncement
 ) {
-    val colorScheme = MaterialTheme.colorScheme
-    val isDark = isSystemInDarkTheme()
-
-    // Format tanggal & waktu Indonesia
     val formattedCreatedAt = remember(announcement.created_at) {
         formatDateTimeIndonesian(announcement.created_at)
     }
@@ -692,10 +618,7 @@ private fun AnnouncementItemPremium(
     Card(
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isDark)
-                colorScheme.surfaceVariant
-            else
-                colorScheme.surface
+            containerColor = Color.White
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         modifier = Modifier.fillMaxWidth()
@@ -708,14 +631,14 @@ private fun AnnouncementItemPremium(
                 val initial = announcement.created_by_name.firstOrNull()?.toString() ?: "A"
                 Surface(
                     shape = CircleShape,
-                    color = colorScheme.tertiaryContainer,
+                    color = Color(0xFFE0F2FE),
                     modifier = Modifier.size(40.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(
                             text = initial,
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = colorScheme.onTertiaryContainer
+                            color = Color(0xFF1E40AF)
                         )
                     }
                 }
@@ -726,12 +649,12 @@ private fun AnnouncementItemPremium(
                     Text(
                         text = announcement.created_by_name,
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                        color = colorScheme.onSurface
+                        color = Color.Black
                     )
                     Text(
                         text = formattedCreatedAt,
                         style = MaterialTheme.typography.labelSmall,
-                        color = colorScheme.onSurfaceVariant
+                        color = Color(0xFF64748B)
                     )
                 }
             }
@@ -742,13 +665,13 @@ private fun AnnouncementItemPremium(
             Text(
                 text = announcement.title,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = colorScheme.onSurface
+                color = Color.Black
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = announcement.body,
                 style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
-                color = colorScheme.onSurface.copy(alpha = 0.85f)
+                color = Color(0xFF0F172A)
             )
         }
     }
@@ -784,9 +707,6 @@ private fun ErrorBanner(message: String) {
 
 @Composable
 private fun EmptyAnnouncementStatePremium() {
-    val colorScheme = MaterialTheme.colorScheme
-    val isDark = isSystemInDarkTheme()
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -797,7 +717,7 @@ private fun EmptyAnnouncementStatePremium() {
             modifier = Modifier
                 .size(80.dp)
                 .background(
-                    if (isDark) colorScheme.surfaceVariant else colorScheme.surfaceContainerHigh,
+                    Color(0xFFF1F5F9),
                     CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -805,7 +725,7 @@ private fun EmptyAnnouncementStatePremium() {
             Icon(
                 imageVector = Icons.Filled.Campaign,
                 contentDescription = null,
-                tint = colorScheme.onSurfaceVariant.copy(alpha = 0.45f),
+                tint = Color(0xFF94A3B8),
                 modifier = Modifier.size(40.dp)
             )
         }
@@ -813,12 +733,12 @@ private fun EmptyAnnouncementStatePremium() {
         Text(
             text = "Belum Ada Pengumuman",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color = colorScheme.onSurfaceVariant
+            color = Color(0xFF475569)
         )
         Text(
             text = "Informasi penting dari panitia akan muncul di sini.",
             style = MaterialTheme.typography.bodySmall,
-            color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            color = Color(0xFF94A3B8),
             textAlign = TextAlign.Center
         )
     }

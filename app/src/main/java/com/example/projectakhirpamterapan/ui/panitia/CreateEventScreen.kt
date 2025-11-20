@@ -137,18 +137,20 @@ fun CreateEventScreen(
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = colorScheme.background,
-                    scrolledContainerColor = colorScheme.background
+                    containerColor = Color.White,
+                    scrolledContainerColor = Color.White,
+                    titleContentColor = Color(0xFF1E40AF),
+                    navigationIconContentColor = Color(0xFF1E40AF)
                 )
             )
         },
-        containerColor = colorScheme.background
+        containerColor = Color.White
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(colorScheme.background)
+                    .background(Color.White)
                     .verticalScroll(scrollState)
                     .padding(innerPadding)
                     .padding(horizontal = 24.dp)
@@ -160,30 +162,25 @@ fun CreateEventScreen(
                         text = "Detail Agenda",
                         style = MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = colorScheme.onBackground
+                            color = Color(0xFF1E40AF)
                         )
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Isi formulir lengkap untuk membuat QR kehadiran.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = colorScheme.onBackground.copy(alpha = 0.6f)
+                        color = Color(0xFF1E40AF)
                     )
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                val isDark = isSystemInDarkTheme()
-                val borderStroke = if (isDark) {
-                    BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
-                } else {
-                    BorderStroke(1.dp, colorScheme.outlineVariant.copy(alpha = 0.3f))
-                }
+                val borderStroke = BorderStroke(1.dp, Color(0xFF1E40AF))
 
                 Card(
                     shape = RoundedCornerShape(24.dp), // Lebih rounded
                     colors = CardDefaults.cardColors(
-                        containerColor = colorScheme.surface
+                        containerColor = Color.White
                     ),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                     border = borderStroke
@@ -198,7 +195,7 @@ fun CreateEventScreen(
                             onValueChange = { title = it },
                             label = "Nama Event",
                             placeholder = "Ex: Rapat Koordinasi",
-                            icon = Icons.Default.Edit
+                            icon = Icons.Default.Edit,
                         )
 
                         // 2. Row Tanggal & Waktu
@@ -246,7 +243,7 @@ fun CreateEventScreen(
                 Text(
                     text = "Status Awal (Otomatis)",
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                    color = colorScheme.onBackground.copy(alpha = 0.8f)
+                    color = Color(0xFF1E40AF)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -343,7 +340,7 @@ fun CreateEventScreen(
                             ),
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = colorScheme.primary,
+                            containerColor = Color(0xFF1E40AF),
                             disabledContainerColor = colorScheme.onSurface.copy(alpha = 0.12f)
                         )
                     ) {
@@ -358,8 +355,10 @@ fun CreateEventScreen(
                         } else {
                             Text(
                                 "Simpan & Buat QR",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                color = Color.White
                             )
+
                         }
                     }
                 }
@@ -400,14 +399,18 @@ fun CustomOutlinedTextField(
         label = { Text(label) },
         placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) },
         leadingIcon = {
-            Icon(imageVector = icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            Icon(imageVector = icon, contentDescription = null, tint = Color(0xFF1E40AF))
         },
         shape = RoundedCornerShape(16.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-            focusedContainerColor = MaterialTheme.colorScheme.surface, // Transparent inside
-            unfocusedContainerColor = MaterialTheme.colorScheme.surface
+            focusedBorderColor = Color(0xFF1E40AF),
+            unfocusedBorderColor = Color(0xFF1E40AF),
+            focusedLabelColor = Color(0xFF1E40AF),
+            unfocusedLabelColor = Color(0xFF1E40AF),
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
+            focusedTextColor = Color(0xFF1E40AF),
+            unfocusedTextColor = Color(0xFF1E40AF)
         ),
         singleLine = singleLine,
         readOnly = readOnly,
@@ -427,14 +430,14 @@ fun StatusChipReadOnly(
     val containerColor = if (isActive) {
         color.copy(alpha = if (isDark) 0.15f else 0.1f)
     } else {
-        MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.3f)
+        Color(0xFFD3D3D3)  // Light gray background for inactive
     }
 
     // Warna Text
     val contentColor = if (isActive) {
         if (isDark) color.copy(alpha = 0.9f) else color
     } else {
-        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+        Color.White  // White text for inactive
     }
 
     // Border Logic

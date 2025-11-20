@@ -1,10 +1,6 @@
 package com.example.projectakhirpamterapan.ui.panitia.kelolaevent
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,12 +27,10 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -56,7 +50,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -66,7 +59,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -91,11 +83,6 @@ fun PanitiaKelolaEventScreen(
     onBack: () -> Unit
 ) {
     val uiState by vm.uiState.collectAsState()
-    val colorScheme = MaterialTheme.colorScheme
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
-        rememberTopAppBarState()
-    )
-
     val snackbarHostState = remember { SnackbarHostState() }
     var snackMessage by remember { mutableStateOf<String?>(null) }
     var showAddAnnouncement by remember { mutableStateOf(false) }
@@ -116,7 +103,8 @@ fun PanitiaKelolaEventScreen(
     }
 
     val totalParticipantsFiltered = filteredParticipants.size
-    val maxPageIndex = if (totalParticipantsFiltered == 0) 0 else (totalParticipantsFiltered - 1) / pageSize
+    val maxPageIndex =
+        if (totalParticipantsFiltered == 0) 0 else (totalParticipantsFiltered - 1) / pageSize
 
     LaunchedEffect(totalParticipantsFiltered) {
         if (currentPage > maxPageIndex) {
@@ -140,51 +128,47 @@ fun PanitiaKelolaEventScreen(
     }
 
     Scaffold(
-        containerColor = colorScheme.background,
+        containerColor = Color.White,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.White
+                ),
                 title = {
                     Text(
                         text = "Kelola Event",
+                        color = Color(0xFF1E40AF),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold
                         )
                     )
                 },
                 navigationIcon = {
-                    IconButton(
-                        onClick = onBack,
-                        colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = colorScheme.surface.copy(alpha = 0.6f)
-                        )
-                    ) {
+                    IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Kembali"
+                            contentDescription = "Kembali",
+                            tint = Color(0xFF1E40AF)
                         )
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = { vm.refresh() },
-                        colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = colorScheme.surfaceVariant
-                        )
-                    ) {
+                    IconButton(onClick = { vm.refresh() }) {
                         Icon(
                             imageVector = Icons.Filled.Refresh,
-                            contentDescription = "Refresh"
+                            contentDescription = "Refresh",
+                            tint = Color(0xFF1E40AF)
                         )
                     }
-                },
-                scrollBehavior = scrollBehavior
+                }
             )
         }
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Color.White)
                 .padding(paddingValues)
         ) {
             if (uiState.isLoading) {
@@ -192,7 +176,7 @@ fun PanitiaKelolaEventScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = Color(0xFF1E40AF))
                 }
             } else {
                 LazyColumn(
@@ -262,7 +246,7 @@ fun PanitiaKelolaEventScreen(
                                     modifier = Modifier
                                         .height(24.dp)
                                         .width(4.dp)
-                                        .background(colorScheme.primary, CircleShape)
+                                        .background(Color(0xFF1E40AF), CircleShape)
                                 )
                                 Text(
                                     text = "Papan Pengumuman",
@@ -270,17 +254,18 @@ fun PanitiaKelolaEventScreen(
                                         fontWeight = FontWeight.ExtraBold,
                                         letterSpacing = (-0.5).sp
                                     ),
-                                    color = colorScheme.onSurface
+                                    color = Color.Black
                                 )
                             }
 
                             TextButton(onClick = { showAddAnnouncement = true }) {
                                 Icon(
                                     imageVector = Icons.Filled.Add,
-                                    contentDescription = null
+                                    contentDescription = null,
+                                    tint = Color(0xFF1E40AF)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Tambah")
+                                Text("Tambah", color = Color(0xFF1E40AF))
                             }
                         }
                     }
@@ -331,9 +316,6 @@ private fun EventInfoCard(
     time: String,
     status: String
 ) {
-    val colorScheme = MaterialTheme.colorScheme
-    val isDark = isSystemInDarkTheme()
-
     val formattedDate = remember(date) {
         try {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -355,28 +337,16 @@ private fun EventInfoCard(
     }
 
     val (statusColor, statusBg) = when (status) {
-        "Berlangsung" -> {
-            if (isDark) Color(0xFF4ADE80) to Color(0xFF064E3B)
-            else Color(0xFF16A34A) to Color(0xFFDCFCE7)
-        }
-        "Selesai" -> {
-            if (isDark) Color(0xFFCBD5F5) to Color(0xFF0F172A)
-            else Color(0xFF475569) to Color(0xFFF1F5F9)
-        }
-        else -> {
-            if (isDark) Color(0xFF60A5FA) to Color(0xFF1D4ED8)
-            else Color(0xFF2563EB) to Color(0xFFDBEAFE)
-        }
+        "Berlangsung" -> Color(0xFF16A34A) to Color(0xFFDCFCE7)
+        "Selesai" -> Color(0xFF475569) to Color(0xFFF1F5F9)
+        else -> Color(0xFF2563EB) to Color(0xFFDBEAFE)
     }
 
     Card(
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isDark)
-                colorScheme.surfaceVariant.copy(alpha = 0.8f)
-            else
-                colorScheme.surface
+            containerColor = Color.White
         ),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -394,7 +364,7 @@ private fun EventInfoCard(
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
                     ),
-                    color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = Color(0xFF94A3B8)
                 )
 
                 Surface(
@@ -418,20 +388,19 @@ private fun EventInfoCard(
                     fontWeight = FontWeight.Bold,
                     lineHeight = 32.sp
                 ),
-                color = colorScheme.onSurface
+                color = Color.Black
             )
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            HorizontalDivider(color = colorScheme.outlineVariant.copy(alpha = 0.3f))
+            HorizontalDivider(color = Color(0xFFE2E8F0))
 
             Spacer(modifier = Modifier.height(20.dp))
 
             InfoRowItem(
                 icon = Icons.Filled.LocationOn,
                 title = "Lokasi",
-                value = location,
-                colorScheme = colorScheme
+                value = location
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -439,8 +408,7 @@ private fun EventInfoCard(
             InfoRowItem(
                 icon = Icons.Filled.CalendarToday,
                 title = "Tanggal & Waktu",
-                value = "$formattedDate\nPukul $formattedTime",
-                colorScheme = colorScheme
+                value = "$formattedDate\nPukul $formattedTime"
             )
         }
     }
@@ -450,15 +418,14 @@ private fun EventInfoCard(
 private fun InfoRowItem(
     icon: ImageVector,
     title: String,
-    value: String,
-    colorScheme: androidx.compose.material3.ColorScheme
+    value: String
 ) {
     Row {
         Box(
             modifier = Modifier
                 .size(40.dp)
                 .background(
-                    colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                    Color(0xFFE0F2FE),
                     CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -466,7 +433,7 @@ private fun InfoRowItem(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = colorScheme.primary,
+                tint = Color(0xFF1E40AF),
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -477,13 +444,13 @@ private fun InfoRowItem(
             Text(
                 text = title,
                 style = MaterialTheme.typography.labelMedium,
-                color = colorScheme.onSurfaceVariant
+                color = Color(0xFF64748B)
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-                color = colorScheme.onSurface
+                color = Color.Black
             )
         }
     }
@@ -493,21 +460,11 @@ private fun InfoRowItem(
 private fun AttendanceSummaryCard(
     summary: AttendanceSummaryUi
 ) {
-    val colorScheme = MaterialTheme.colorScheme
-    val isDark = isSystemInDarkTheme()
-
     val bgGradient = Brush.verticalGradient(
-        colors = if (isDark) {
-            listOf(
-                colorScheme.primaryContainer.copy(alpha = 0.2f),
-                colorScheme.surfaceVariant.copy(alpha = 0.9f)
-            )
-        } else {
-            listOf(
-                colorScheme.primaryContainer.copy(alpha = 0.35f),
-                colorScheme.surface
-            )
-        }
+        colors = listOf(
+            Color(0xFFE0F2FE),
+            Color.White
+        )
     )
 
     Card(
@@ -530,13 +487,13 @@ private fun AttendanceSummaryCard(
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold
                     ),
-                    color = colorScheme.onSurface
+                    color = Color.Black
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Total peserta: ${summary.total}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = colorScheme.onSurfaceVariant
+                    color = Color(0xFF64748B)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -575,12 +532,13 @@ private fun AttendanceStatRow(
         ) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = Color.Black
             )
             Text(
                 text = "$count • $percentLabel",
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color(0xFF64748B)
             )
         }
 
@@ -592,7 +550,7 @@ private fun AttendanceStatRow(
                 .fillMaxWidth()
                 .height(6.dp),
             color = barColor,
-            trackColor = MaterialTheme.colorScheme.surfaceVariant
+            trackColor = Color(0xFFE2E8F0)
         )
     }
 }
@@ -610,16 +568,12 @@ private fun ParticipantsCard(
     onNextPage: () -> Unit
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    val isDark = isSystemInDarkTheme()
 
     Card(
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isDark)
-                colorScheme.surfaceVariant.copy(alpha = 0.9f)
-            else
-                colorScheme.surface
+            containerColor = Color.White
         ),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -638,13 +592,13 @@ private fun ParticipantsCard(
                     Box(
                         modifier = Modifier
                             .size(32.dp)
-                            .background(colorScheme.primary.copy(alpha = 0.12f), CircleShape),
+                            .background(Color(0xFFE0F2FE), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Groups,
                             contentDescription = null,
-                            tint = colorScheme.primary
+                            tint = Color(0xFF1E40AF)
                         )
                     }
 
@@ -653,7 +607,7 @@ private fun ParticipantsCard(
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold
                         ),
-                        color = colorScheme.onSurface,
+                        color = Color.Black,
                         modifier = Modifier.padding(start = 8.dp)
                     )
                 }
@@ -682,13 +636,13 @@ private fun ParticipantsCard(
                 Text(
                     text = "Belum ada peserta yang bergabung.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = colorScheme.onSurfaceVariant
+                    color = Color(0xFF64748B)
                 )
             } else if (participants.isEmpty()) {
                 Text(
                     text = "Tidak ditemukan peserta dengan kata kunci tersebut.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = colorScheme.onSurfaceVariant
+                    color = Color(0xFF64748B)
                 )
             } else {
                 participants.forEach { p ->
@@ -698,21 +652,20 @@ private fun ParticipantsCard(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                HorizontalDivider(color = colorScheme.outlineVariant.copy(alpha = 0.3f))
+                HorizontalDivider(color = Color(0xFFE2E8F0))
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 val firstIndex = startIndex + 1
                 val lastIndex = startIndex + participants.size
 
-                // ====== TEKS INFO + PAGINATION YANG LEBIH PROPORSIONAL ======
                 Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
                         text = "Menampilkan $firstIndex–$lastIndex dari $totalParticipants peserta",
                         style = MaterialTheme.typography.labelMedium,
-                        color = colorScheme.onSurfaceVariant
+                        color = Color(0xFF64748B)
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -727,10 +680,10 @@ private fun ParticipantsCard(
                             enabled = currentPage > 0,
                             colors = IconButtonDefaults.iconButtonColors(
                                 containerColor = if (currentPage > 0)
-                                    colorScheme.primary.copy(alpha = 0.12f)
+                                    Color(0xFFE0F2FE)
                                 else
-                                    colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                                contentColor = colorScheme.onSurface
+                                    Color(0xFFF1F5F9),
+                                contentColor = Color.Black
                             )
                         ) {
                             Icon(
@@ -742,7 +695,7 @@ private fun ParticipantsCard(
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Surface(
-                            color = colorScheme.surfaceVariant,
+                            color = Color(0xFFF1F5F9),
                             shape = RoundedCornerShape(50)
                         ) {
                             Text(
@@ -750,7 +703,7 @@ private fun ParticipantsCard(
                                 style = MaterialTheme.typography.labelMedium.copy(
                                     fontWeight = FontWeight.SemiBold
                                 ),
-                                color = colorScheme.onSurface,
+                                color = Color.Black,
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
                                 textAlign = TextAlign.Center
                             )
@@ -763,10 +716,10 @@ private fun ParticipantsCard(
                             enabled = currentPage < totalPages - 1,
                             colors = IconButtonDefaults.iconButtonColors(
                                 containerColor = if (currentPage < totalPages - 1)
-                                    colorScheme.primary.copy(alpha = 0.12f)
+                                    Color(0xFFE0F2FE)
                                 else
-                                    colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                                contentColor = colorScheme.onSurface
+                                    Color(0xFFF1F5F9),
+                                contentColor = Color.Black
                             )
                         ) {
                             Icon(
@@ -785,9 +738,6 @@ private fun ParticipantsCard(
 private fun ParticipantRow(
     participant: ParticipantUi
 ) {
-    val colorScheme = MaterialTheme.colorScheme
-    val isDark = isSystemInDarkTheme()
-
     val initial = participant.name.firstOrNull()?.toString()?.uppercase() ?: "P"
 
     // === Format tanggal & waktu check-in ke format Indonesia ===
@@ -818,23 +768,26 @@ private fun ParticipantRow(
     val (badgeText, badgeColor, badgeBg) = when (participant.status) {
         "hadir" -> Triple(
             "Hadir",
-            Color(0xFF22C55E),
-            if (isDark) Color(0xFF052E16) else Color(0xFFDCFCE7)
+            Color(0xFF16A34A),
+            Color(0xFFDCFCE7)
         )
+
         "izin" -> Triple(
             "Izin",
             Color(0xFFF97316),
-            if (isDark) Color(0xFF431407) else Color(0xFFFFEDD5)
+            Color(0xFFFFEDD5)
         )
+
         "alfa" -> Triple(
             "Alfa",
             Color(0xFFDC2626),
-            if (isDark) Color(0xFF450A0A) else Color(0xFFFEF2F2)
+            Color(0xFFFEF2F2)
         )
+
         else -> Triple(
             "Belum Absen",
-            colorScheme.onSurfaceVariant,
-            colorScheme.surfaceVariant.copy(alpha = if (isDark) 0.7f else 0.4f)
+            Color(0xFF64748B),
+            Color(0xFFF1F5F9)
         )
     }
 
@@ -844,7 +797,7 @@ private fun ParticipantRow(
     ) {
         Surface(
             shape = CircleShape,
-            color = colorScheme.primary.copy(alpha = 0.18f)
+            color = Color(0xFFE0F2FE)
         ) {
             Box(
                 modifier = Modifier.size(40.dp),
@@ -853,7 +806,7 @@ private fun ParticipantRow(
                 Text(
                     text = initial,
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = colorScheme.primary
+                    color = Color(0xFF1E40AF)
                 )
             }
         }
@@ -866,14 +819,14 @@ private fun ParticipantRow(
             Text(
                 text = participant.name,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = colorScheme.onSurface,
+                color = Color.Black,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = participant.email,
                 style = MaterialTheme.typography.bodySmall,
-                color = colorScheme.onSurfaceVariant,
+                color = Color(0xFF64748B),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -881,7 +834,7 @@ private fun ParticipantRow(
                 Text(
                     text = "Check-in: $formatted",
                     style = MaterialTheme.typography.labelSmall,
-                    color = colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                    color = Color(0xFF94A3B8)
                 )
             }
         }
@@ -904,9 +857,6 @@ private fun ParticipantRow(
 private fun AnnouncementItem(
     announcement: EventAnnouncement
 ) {
-    val colorScheme = MaterialTheme.colorScheme
-    val isDark = isSystemInDarkTheme()
-
     // ==== FORMAT TANGGAL + JAM INDONESIA ====
     val formattedCreatedAt = remember(announcement.created_at) {
         val raw = announcement.created_at
@@ -935,10 +885,7 @@ private fun AnnouncementItem(
     Card(
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isDark)
-                colorScheme.surfaceVariant
-            else
-                colorScheme.surface
+            containerColor = Color.White
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier.fillMaxWidth()
@@ -950,14 +897,14 @@ private fun AnnouncementItem(
                 val initial = announcement.created_by_name.firstOrNull()?.toString() ?: "A"
                 Surface(
                     shape = CircleShape,
-                    color = colorScheme.tertiaryContainer,
+                    color = Color(0xFFE0F2FE),
                     modifier = Modifier.size(40.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(
                             text = initial,
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = colorScheme.onTertiaryContainer
+                            color = Color(0xFF1E40AF)
                         )
                     }
                 }
@@ -968,12 +915,12 @@ private fun AnnouncementItem(
                     Text(
                         text = announcement.created_by_name,
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                        color = colorScheme.onSurface
+                        color = Color.Black
                     )
                     Text(
                         text = formattedCreatedAt,
                         style = MaterialTheme.typography.labelSmall,
-                        color = colorScheme.onSurfaceVariant
+                        color = Color(0xFF64748B)
                     )
                 }
             }
@@ -983,13 +930,13 @@ private fun AnnouncementItem(
             Text(
                 text = announcement.title,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = colorScheme.onSurface
+                color = Color.Black
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = announcement.body,
                 style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
-                color = colorScheme.onSurface.copy(alpha = 0.8f)
+                color = Color(0xFF0F172A)
             )
         }
     }
@@ -1034,13 +981,13 @@ private fun EmptyAnnouncementState() {
         Box(
             modifier = Modifier
                 .size(80.dp)
-                .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+                .background(Color(0xFFF1F5F9), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Filled.Campaign,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                tint = Color(0xFF94A3B8),
                 modifier = Modifier.size(40.dp)
             )
         }
@@ -1048,12 +995,12 @@ private fun EmptyAnnouncementState() {
         Text(
             text = "Belum Ada Pengumuman",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = Color(0xFF475569)
         )
         Text(
             text = "Pengumuman dari panitia akan tampil di sini.",
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            color = Color(0xFF94A3B8),
             textAlign = TextAlign.Center
         )
     }

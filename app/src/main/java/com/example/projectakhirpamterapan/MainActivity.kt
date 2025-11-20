@@ -45,6 +45,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Force dark system bars
         val systemColor = Color(0xFF020617).toArgb()
         window.statusBarColor = systemColor
         window.navigationBarColor = systemColor
@@ -55,7 +56,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ProjectakhirpamterapanTheme(darkTheme = true) {
-
                 val navController = rememberNavController()
                 val authVm: AuthViewModel = viewModel()
 
@@ -135,14 +135,14 @@ class MainActivity : ComponentActivity() {
                                     launchSingleTop = true
                                 }
                             },
-                            onOpenEventDetail = { eventId, eventTitle, eventDate, eventTime, eventLocation, eventStatus ->
+                            onOpenEventDetail = { eventId, title, date, time, location, status ->
                                 navController.navigate(
                                     "pesertaEventDetail/$eventId/" +
-                                            "${Uri.encode(eventTitle)}/" +
-                                            "${Uri.encode(eventDate ?: "")}/" +
-                                            "${Uri.encode(eventTime ?: "")}/" +
-                                            "${Uri.encode(eventLocation)}/" +
-                                            "${Uri.encode(eventStatus)}"
+                                            "${Uri.encode(title)}/" +
+                                            "${Uri.encode(date)}/" +
+                                            "${Uri.encode(time)}/" +
+                                            "${Uri.encode(location)}/" +
+                                            "${Uri.encode(status)}"
                                 )
                             }
                         )
@@ -223,7 +223,7 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("Silakan login ulang.")
+                                Text("Sesi berakhir. Silakan login ulang.")
                             }
                             return@composable
                         }
@@ -239,16 +239,15 @@ class MainActivity : ComponentActivity() {
                         PanitiaDashboardScreen(
                             vm = panitiaVm,
                             userName = user.name,
-                            onBack = {
-                                // contoh: kembali ke role selection
+                            onCreateEvent = {
+                                navController.navigate("createEvent")
+                            },
+                            onBackToRole = {
                                 navController.popBackStack()
                                 navController.navigate("role") {
                                     popUpTo("role") { inclusive = false }
                                     launchSingleTop = true
                                 }
-                            },
-                            onCreateEvent = {
-                                navController.navigate("createEvent")
                             },
                             onOpenEventDetail = { eventId, title, date, time, location, status ->
                                 navController.navigate(
